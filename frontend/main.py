@@ -3,6 +3,7 @@ from tkinter import ttk
 from ttkthemes import ThemedTk
 
 from encryption.AESEncrypter import AESEncrypter
+from encryption.BlowfishEncrypter import BlowfishEncrypter
 
 
 class App:
