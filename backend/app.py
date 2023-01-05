@@ -4,7 +4,6 @@ import ftplib
 from dotenv import load_dotenv
 from flask import Flask, request
 import requests
-from Crypto.PublicKey import RSA
 # from flask_restful import Api, Resource
 
 
@@ -74,27 +73,7 @@ def home():
 def create_user():
     data = request.get_json()
     user_id = data["id"]
-    
-    key = RSA.generate(2048)
-    private_key = key.export_key()
 
-    # generating a private key and storing it locally
-    file_out = open("private_key.pem", "wb")
-    file_out.write(private_key)
-    file_out.close()
-
-    # generating a public key and uploading it to the server
-    public_key = key.publickey().export_key()
-    file_out = open("public_key.pem", "wb")
-    file_out.write(public_key)
-    file_out.close()
-
-    # upload file holding public key information 
-    dictToSend = {'user_id':user_id, 'file_name': 'public_key.pem'}
-    message = requests.post('http://127.0.0.1:5000/api/upload', json=dictToSend)
-    print(message)
-
-    # creating a new entry in the database for the user to hold their id and path to public key
     with connection:
         with connection.cursor() as cursor:
             cursor.execute(CREATE_USERS_TABLE)
