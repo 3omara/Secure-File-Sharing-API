@@ -2,6 +2,8 @@ import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedTk
 
+from encryption.AESEncrypter import AESEncrypter
+
 
 class App:
     def __init__(self):

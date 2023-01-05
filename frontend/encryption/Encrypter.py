@@ -2,8 +2,15 @@ from abc import ABC
 
 
 class Encrypter(ABC):
-    def encrypt(self, plaintext: str, key: str) -> str:
+    @property
+    def BLOCK_SIZE(self) -> int:
         pass
 
-    def decrypt(self, ciphertext: str, key: str) -> str:
+    def generate_key(self) -> bytes:
+        pass
+
+    def encrypt(self, plaintext: str, key: bytes) -> str:
+        pass
+
+    def decrypt(self, ciphertext: str, key: bytes) -> str:
         pass
