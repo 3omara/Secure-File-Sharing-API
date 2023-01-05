@@ -1,10 +1,15 @@
 from abc import ABC, abstractmethod
 
 
-class Encrypter(ABC):
+class SymmetricCipher(ABC):
     @property
     @abstractmethod
     def BLOCK_SIZE(self) -> int:
+        pass
+
+    @property
+    @abstractmethod
+    def KEY_SIZE(self) -> int:
         pass
 
     @abstractmethod

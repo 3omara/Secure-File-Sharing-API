@@ -2,8 +2,10 @@ import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedTk
 
-from encryption.AESEncrypter import AESEncrypter
-from encryption.BlowfishEncrypter import BlowfishEncrypter
+from ciphers.AESCipher import AESCipher
+from ciphers.DESCipher import DESCipher
+from ciphers.BlowfishCipher import BlowfishCipher
+from ciphers.FileCipher import FileCipher
 
 
 class App:
@@ -61,4 +63,12 @@ class App:
 
 
 if __name__ == '__main__':
+    keys = []
+    cipher = FileCipher([AESCipher(), DESCipher(), BlowfishCipher()])
+    with open("test.txt.enc", "wb") as file:
+        for ciphertext in cipher.encrypt("test.txt", keys.extend):
+            file.write(ciphertext)
+    with open("test.txt.dec", "wb") as file:
+        for plaintext in cipher.decrypt("test.txt.enc", keys):
+            file.write(plaintext)
     App().run()

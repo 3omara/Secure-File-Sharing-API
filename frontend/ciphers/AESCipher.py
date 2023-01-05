@@ -1,16 +1,20 @@
 from Crypto.Cipher import AES
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
-from encryption.Encrypter import Encrypter
+from ciphers.Cipher import SymmetricCipher
 
 
-class AESEncrypter(Encrypter):
+class AESCipher(SymmetricCipher):
     @property
     def BLOCK_SIZE(self) -> int:
         return AES.block_size
 
+    @property
+    def KEY_SIZE(self) -> int:
+        return AES.key_size[0]
+
     def generate_key(self) -> bytes:
-        return get_random_bytes(AES.key_size[0])
+        return get_random_bytes(self.KEY_SIZE)
 
     def encrypt(self, plaintext: bytes, key: bytes) -> bytes:
         plaintext = pad(plaintext, self.BLOCK_SIZE)

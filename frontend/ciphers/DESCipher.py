@@ -1,15 +1,20 @@
 from Crypto.Cipher import DES
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
-from encryption.Encrypter import Encrypter
+from ciphers.Cipher import SymmetricCipher
 
-class DESCipher(Encrypter):
+
+class DESCipher(SymmetricCipher):
     @property
     def BLOCK_SIZE(self) -> int:
         return DES.block_size
 
+    @property
+    def KEY_SIZE(self) -> int:
+        return DES.key_size
+
     def generate_key(self) -> bytes:
-        return get_random_bytes(DES.key_size)
+        return get_random_bytes(self.KEY_SIZE)
 
     def encrypt(self, plaintext: bytes, key: bytes) -> str:
         plaintext = pad(plaintext, self.BLOCK_SIZE)
