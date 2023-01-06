@@ -1,14 +1,18 @@
+from ftplib import FTP
+import os
 import tkinter as tk
 from tkinter import ttk
 from ttkthemes import ThemedTk
+from dotenv import load_dotenv
 
 from ciphers.AESCipher import AESCipher
 from ciphers.DESCipher import DESCipher
 from ciphers.BlowfishCipher import BlowfishCipher
 from ciphers.FileCipher import FileCipher
 from database.Database import Database
+from repositories.FileReferencesRepository import FileReferencesRepository
 from models.FileReference import FileReference
-from repository.RemoteFilesRepository import RemoteFilesRepository
+from services.SecureFTP import SecureFTP
 
 
 class App:
@@ -66,10 +70,29 @@ class App:
 
 
 if __name__ == '__main__':
-    database = Database()
-    remote_files_repository = RemoteFilesRepository(database)
-    remote_files_repository.insert(FileReference(
-        1, "File 1", 1, "User 1", b"1234567890123456", "2020-01-01"))
-    remote_file = remote_files_repository.get(1)
-    print(remote_file)
+    load_dotenv('.env')
+
+    # ftp_service = SecureFTP(
+    #     ftp=FTP(),
+    #     cipher=FileCipher(
+    #         [AESCipher(), DESCipher(), BlowfishCipher()]
+    #     ),
+    #     master_cipher=FileCipher(
+    #         [AESCipher()]
+    #     ),
+    #     file_references_repository=FileReferencesRepository(
+    #         database=Database()
+    #     )
+    # )
+    # ftp_service.connect(
+    #     host=os.getenv("FTP_HOST"),
+    #     port=int(os.getenv("FTP_PORT")),
+    # )
+    # ftp_service.login(
+    #     user=os.getenv("FTP_USER"),
+    #     passwd=os.getenv("FTP_PASSWD")
+    # )
+
+    # ftp_service.upload("test.txt")
+
     # App().run()
