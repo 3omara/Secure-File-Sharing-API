@@ -19,10 +19,9 @@ class RSACipher:
         file_out.write(public_key)
         file_out.close()
 
-        # upload file holding public key information
-        dictToSend = {'user_id': user_id, 'file_name': 'public_key.pem'}
-        message = requests.post(
-            'http://127.0.0.1:5000/api/upload', json=dictToSend)
+        # upload file holding public key information 
+        dictToSend = {'user_id':user_id, 'file_name': 'public_key.pem', 'file_type':0}
+        message = requests.post('http://127.0.0.1:5000/api/upload', json=dictToSend)
 
         return message
 
