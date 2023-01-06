@@ -1,4 +1,5 @@
 from typing import Callable, Iterator, List
+from itertools import cycle
 from ciphers.Cipher import SymmetricCipher
 
 
@@ -6,40 +7,15 @@ class FileCipher:
     def __init__(self, ciphers: List[SymmetricCipher]):
         self.ciphers = ciphers
 
-    def encrypt(self, filepath: str, set_keys: Callable[[List[bytes]], None]) -> Iterator[bytes]:
-        keys = [cipher.generate_key() for cipher in self.ciphers]
-        set_keys(keys)
-        cipher_index = -1
+    def generate_keys(self) -> List[bytes]:
+        return [cipher.generate_key() for cipher in self.ciphers]
 
-        def next_cipher():
-            nonlocal cipher_index
-            cipher_index += 1
-            cipher_index %= len(self.ciphers)
-            return self.ciphers[cipher_index]
+    def encrypt(self, read: Callable[[int], bytes], write: Callable[[bytes], int], keys: List[bytes]) -> None:
+        cipher_key_pairs = cycle(zip(self.ciphers, keys))
+        while (ck := next(cipher_key_pairs)) and (part := read(ck[0].BLOCK_SIZE)):
+            write(ck[0].encrypt(part, ck[1]))
 
-        with open(filepath, "rb") as file:
-            cipher = next_cipher()
-            part = file.read(cipher.BLOCK_SIZE)
-            while part:
-                part = cipher.encrypt(part, keys[cipher_index])
-                yield part
-                cipher = next_cipher()
-                part = file.read(cipher.BLOCK_SIZE)
-
-    def decrypt(self, filepath: str, keys: List[bytes]) -> Iterator[bytes]:
-        cipher_index = -1
-
-        def next_cipher():
-            nonlocal cipher_index
-            cipher_index += 1
-            cipher_index %= len(self.ciphers)
-            return self.ciphers[cipher_index]
-
-        with open(filepath, "rb") as file:
-            cipher = next_cipher()
-            part = file.read(cipher.BLOCK_SIZE)
-            while part:
-                part = cipher.decrypt(part, keys[cipher_index])
-                yield part
-                cipher = next_cipher()
-                part = file.read(cipher.BLOCK_SIZE)
+    def decrypt(self, read: Callable[[int], bytes], write: Callable[[bytes], int], keys: List[bytes]) -> None:
+        cipher_key_pairs = cycle(zip(self.ciphers, keys))
+        while (ck := next(cipher_key_pairs)) and (part := read(ck[0].BLOCK_SIZE)):
+            write(ck[0].decrypt(part, ck[1]))

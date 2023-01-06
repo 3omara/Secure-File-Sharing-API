@@ -6,6 +6,9 @@ from ciphers.AESCipher import AESCipher
 from ciphers.DESCipher import DESCipher
 from ciphers.BlowfishCipher import BlowfishCipher
 from ciphers.FileCipher import FileCipher
+from database.Database import Database
+from models.FileReference import FileReference
+from repository.RemoteFilesRepository import RemoteFilesRepository
 
 
 class App:
@@ -63,12 +66,10 @@ class App:
 
 
 if __name__ == '__main__':
-    keys = []
-    cipher = FileCipher([AESCipher(), DESCipher(), BlowfishCipher()])
-    with open("test.txt.enc", "wb") as file:
-        for ciphertext in cipher.encrypt("test.txt", keys.extend):
-            file.write(ciphertext)
-    with open("test.txt.dec", "wb") as file:
-        for plaintext in cipher.decrypt("test.txt.enc", keys):
-            file.write(plaintext)
-    App().run()
+    database = Database()
+    remote_files_repository = RemoteFilesRepository(database)
+    remote_files_repository.insert(FileReference(
+        1, "File 1", 1, "User 1", b"1234567890123456", "2020-01-01"))
+    remote_file = remote_files_repository.get(1)
+    print(remote_file)
+    # App().run()
