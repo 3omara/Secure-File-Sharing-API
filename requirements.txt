@@ -1,6 +1,8 @@
 flask
-psycopg2-binary
+flask-socketio
+python-ftp-server
+python-socketio[client]
 python-dotenv
 pycryptodome
 requests
-Flask-SocketIO
+psycopg2-binary
