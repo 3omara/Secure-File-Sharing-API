@@ -1,3 +1,4 @@
+import os
 from typing import List
 import socketio as sio
 from shared.ObserverPattern import Subject
@@ -8,16 +9,16 @@ class FileReferencesRepository(Subject):
     def __init__(self, client: sio.Client):
         super().__init__()
         self.client = client
-        self.__file_references = [
-            FileReference(
-                id=1,
-                name="file1.txt",
-                owner_id=1,
-                owner_name="user1",
-                master_key=None,
-                uploaded_at="2020-01-01 00:00:00"
-            ),
-        ]
+        self.__file_references = []
+        self.client.connect(
+            os.getenv("SIO_HOST"),
+            transports=["polling", "websocket"],
+            namespaces=["/file_references"]
+        )
+        self.client.on("init_file_references", self.__on_init_file_references)
+        self.client.on("new_file_reference", self.__on_new_file_reference)
+        self.client.on("delete_file_reference",
+                       self.__on_delete_file_reference)
 
     @property
     def file_references(self):
@@ -33,6 +34,18 @@ class FileReferencesRepository(Subject):
             self.file_references = [*self.__file_references,
                                     FileReference.from_json(response["data"])]
 
-        self.client.emit("upload_file",
+        self.client.emit("new_file_reference",
                          file.to_json(),
                          callback=on_uploaded)
+
+    def __on_init_file_references(self, response):
+        self.file_references = [FileReference.from_json(file)
+                                for file in response["data"]]
+
+    def __on_new_file_reference(self, response):
+        self.file_references = [*self.__file_references,
+                                FileReference.from_json(response["data"])]
+
+    def __on_delete_file_reference(self, response):
+        self.file_references = [file for file in self.__file_references
+                                if file.id != response["data"]["id"]]

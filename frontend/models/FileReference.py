@@ -11,7 +11,6 @@ class FileReference:
     name: str
     owner_id: int
     owner_name: str
-    master_key: bytes
     uploaded_at: str
 
     def to_json(obj: Union[List["FileReference"], "FileReference"]):
@@ -28,7 +27,6 @@ class FileReference:
                 json["name"],
                 json["owner_id"],
                 json["owner_name"],
-                json["master_key"],
                 json["uploaded_at"]
             )
         return FileReference.from_json(loads(json))

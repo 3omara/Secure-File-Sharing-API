@@ -27,24 +27,27 @@ GET_FILE_BY_ID = (
 )
 
 GET_ALL_FILES = (
-    "SELECT * FROM files;"
+    """SELECT f.file_id, f.file_name, f.user_id, u.user_name, f.upload_time
+    FROM files f 
+    INNER JOIN users u ON f.user_id = u.user_id;"""
 )
 
 GET_USER_REQUESTS = (
-    "SELECT * FROM files LEFT JOIN requests ON files.file_id = requests.file_id WHERE files.file_id = requests.file_id AND (requests.sender_id = %s OR files.user_id = %s) ;"
+    "SELECT files.file_id, sender_id, user_id, status, enc_master_key FROM files INNER JOIN requests ON files.file_id = requests.file_id WHERE (requests.sender_id = %s OR files.user_id = %s) ;"
 )
 
-class Repository(metaclass = Singleton):
+
+class Repository(metaclass=Singleton):
 
     def __init__(self, database: Database) -> None:
-        self.database = Database
+        self.database = Database()
 
-    def insert_user(self, user_id: int, user_name: str, public_key:bytes):
+    def insert_user(self, user_id: int, user_name: str, public_key: bytes):
         c = self.database.connection.cursor()
         c.execute(INSERT_USER, (user_id, user_name, public_key))
         self.database.connection.commit()
 
-    def insert_file(self, user_id: int, file_name:str, upload_time:str, file_type:int) -> int:
+    def insert_file(self, user_id: int, file_name: str, upload_time: str, file_type: int) -> int:
         c = self.database.connection.cursor()
         c.execute(INSERT_FILE, (user_id, file_name, upload_time, file_type))
         file_id = c.fetchone()
@@ -75,26 +78,21 @@ class Repository(metaclass = Singleton):
         c.execute(GET_ALL_FILES)
         res = c.fetchall()
         self.database.connection.commit()
-        keys = ("file_id", "user_id", "file_name", "upload_time")
+        keys = ("id", "name", "owner_id", "owner_name", "uploaded_at")
         allFiles = []
         for r in res:
-            r = {keys[i] : r[i] for i, _ in enumerate(r)}
+            r = {keys[i]: v for i, v in enumerate(r)}
             allFiles.append(r)
-        return json.dumps(allFiles)
-
+        return allFiles
 
     def get_user_requests(self, user_id: int):
         c = self.database.connection.cursor()
-        c.execute(GET_USER_REQUESTS, (user_id,user_id))
+        c.execute(GET_USER_REQUESTS, (user_id, user_id))
         res = c.fetchall()
         self.database.connection.commit()
-        keys = ("file_id", "sender_id", "status", "enc_master_key")
+        keys = ("file_id", "sender_id", "user_id", "status", "enc_master_key")
         allRequests = []
         for r in res:
-            r = {keys[i] : r[i] for i, _ in enumerate(r)}
+            r = {keys[i]: v for i, v in enumerate(r)}
             allRequests.append(r)
-        return json.dumps(allRequests)
-
-
-
-    
+        return allRequests
