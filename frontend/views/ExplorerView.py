@@ -41,10 +41,10 @@ class ExplorerView(View, Observer):
         )
 
     def register_observers(self):
-        self.app.subjects.explorer.register_observer(self)
+        self.app.subjects.files.register_observer(self)
 
     def unregister_observers(self):
-        self.app.subjects.explorer.unregister_observer(self)
+        self.app.subjects.files.unregister_observer(self)
 
     def on_right_click(self, event):
         iid = self.tree.identify_row(event.y)
@@ -71,7 +71,7 @@ class ExplorerView(View, Observer):
             self.app.ftp_service.upload(filename)
 
     def update(self, subject):
-        if isinstance(subject, self.app.subjects.explorer.__class__):
+        if isinstance(subject, self.app.subjects.files.__class__):
             self.tree.delete(*self.tree.get_children())
             for ref in subject.file_references:
                 self.tree.insert('', tk.END, values=(
