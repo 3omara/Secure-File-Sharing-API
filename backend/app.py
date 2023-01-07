@@ -5,7 +5,8 @@ from flask import Flask, request
 from flask_socketio import SocketIO
 from Database import Database
 from Repository import Repository
-from models.File import File
+from models.File import File, Status
+from models.User import User
 from models.FileRequest import FileRequest
 import datetime
 
@@ -67,20 +68,62 @@ def new_file_reference(data):
     return response
 
 
-######################### create request #########################
-def create_request():
-    pass
+######################### send request #########################
+
+
+@socketio.on("new_file_request", namespace="/file_requests")
+def new_file_request(data):
+    sender_sid = request.sid
+    data = json.loads(data)
+    sender_id = data['sender_id']
+    file_id = data['file_id']
+    sent_at = str(datetime.datetime.now())
+
+    repository.insert_request(
+        file_id, sender_id, 0, sent_at
+    )
+
+    message = {"file_id": file_id, "file_name":data['file_name'], 
+                "sender_id": data['sender_id'],  "sender_name": data['sender_name'], 
+                "receiver_id": data['receiver_id'], "receiver_name": data['receiver_name'],
+                "status": Status(0).name, "sent_at": sent_at}
+    response = {"status": True, "data": message}
+
+    receiver = User()
+    receiver = repository.get_user(data['receiver_id'])
+    receiver_sid = receiver[3]
+
+    socketio.emit("new_file_request",
+                  json.dumps(response),
+                  namespace="/file_requests",
+                  to=sender_sid)
+
+    socketio.emit("new_file_request",
+                  json.dumps(response),
+                  namespace="/file_requests",
+                  to=receiver_sid)
+    
+    return response
 
 ######################### accept request #########################
 
 
-def accept_request():
+@socketio.on("accept_file_request", namespace="/file_requests")
+def accept_file_request():
     pass
 
-######################### refuse request #########################
+######################### decline request #########################
 
 
-def refuse_request():
+@socketio.on("decline_file_request", namespace="/file_requests")
+def decline_file_request():
+    pass
+
+######################### delete request #########################
+
+
+@socketio.on("delete_file_request", namespace="/file_requests")
+def delete_file_request():
     pass
 
 ######################### login #########################

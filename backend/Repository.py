@@ -1,13 +1,10 @@
 from shared.Singleton import Singleton
 from Database import Database
-from models.File import File
-from models.FileRequest import FileRequest
 from models.User import User
-import json
 
 
 INSERT_USER = (
-    "INSERT INTO users (user_id, user_name, public_key) VALUES (%s, %s, %s);"
+    "INSERT INTO users (user_id, user_name, public_key, sid) VALUES (%s, %s, %s, %s);"
 )
 
 INSERT_FILE = (
@@ -15,7 +12,7 @@ INSERT_FILE = (
 )
 
 INSERT_REQUEST = (
-    "INSERT INTO requests (file_id, sender_id, status) VALUES (%s, %s, %s);"
+    "INSERT INTO requests (file_id, sender_id, status, sent_at) VALUES (%s, %s, %s, %s);"
 )
 
 GET_USER_BY_ID = (
@@ -42,9 +39,9 @@ class Repository(metaclass=Singleton):
     def __init__(self, database: Database) -> None:
         self.database = Database()
 
-    def insert_user(self, user_id: int, user_name: str, public_key: bytes):
+    def insert_user(self, user_id: int, user_name: str, public_key: bytes, sid: str):
         c = self.database.connection.cursor()
-        c.execute(INSERT_USER, (user_id, user_name, public_key))
+        c.execute(INSERT_USER, (user_id, user_name, public_key, sid))
         self.database.connection.commit()
 
     def insert_file(self, user_id: int, file_name: str, upload_time: str) -> int:
@@ -55,9 +52,9 @@ class Repository(metaclass=Singleton):
         print(file_id)
         return file_id
 
-    def insert_request(self, file_id, sender_id, status):
+    def insert_request(self, file_id: int, sender_id: int, status: int, sent_at: str):
         c = self.database.connection.cursor()
-        c.execute(INSERT_REQUEST, (file_id, sender_id, status))
+        c.execute(INSERT_REQUEST, (file_id, sender_id, status, sent_at))
         self.database.connection.commit()
 
     def get_file_with_user(self, file_id):
@@ -72,7 +69,7 @@ class Repository(metaclass=Singleton):
         c.execute(GET_USER_BY_ID, (user_id,))
         res = c.fetchone()
         self.database.connection.commit()
-        return User(res[0], res[1], res[2])
+        return User(res[0], res[1], res[2], res[3])
 
     def get_all_files(self):
         c = self.database.connection.cursor()

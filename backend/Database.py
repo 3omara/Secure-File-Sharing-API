@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 
 # Each user has both a public and a private key for RSA encryption purposes.
 CREATE_USERS_TABLE = (
-    "CREATE TABLE IF NOT EXISTS users (user_id INT, user_name VARCHAR(255), public_key BYTEA, PRIMARY KEY (user_id));"
+    "CREATE TABLE IF NOT EXISTS users (user_id INT, user_name VARCHAR(255), public_key BYTEA, sid VARCHAR(255), PRIMARY KEY (user_id));"
 )
 
 # This table holds two types of files:
@@ -16,7 +16,7 @@ CREATE_FILES_TABLE = (
     "CREATE TABLE IF NOT EXISTS files (file_id SERIAL, user_id INT, file_name VARCHAR(255), upload_time VARCHAR(255), PRIMARY KEY (file_id), FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE);"
 )
 
-CREATE_REQUESTS_TABLE = """ CREATE TABLE IF NOT EXISTS requests (file_id INT, sender_id INT, status INT, enc_master_key BYTEA, 
+CREATE_REQUESTS_TABLE = """ CREATE TABLE IF NOT EXISTS requests (file_id INT, sender_id INT, status INT, enc_master_key BYTEA, sent_at VARCHAR(255) 
                             FOREIGN KEY(sender_id) REFERENCES users(user_id),
                             FOREIGN KEY(file_id) REFERENCES files(file_id)); """
 
