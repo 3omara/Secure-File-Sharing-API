@@ -1,11 +1,11 @@
 import os
 import psycopg2
-from frontend.shared.Singleton import Singleton
+from shared.Singleton import Singleton
 from dotenv import load_dotenv
 
 # Each user has both a public and a private key for RSA encryption purposes.
 CREATE_USERS_TABLE = (
-    "CREATE TABLE IF NOT EXISTS users (id INT, name VARCHAR(255), PRIMARY KEY (id));"
+    "CREATE TABLE IF NOT EXISTS users (user_id INT, user_name VARCHAR(255), public_key BYTEA, PRIMARY KEY (id));"
 )
 
 # This table holds two types of files: 
@@ -13,10 +13,10 @@ CREATE_USERS_TABLE = (
 # - Files holding encrypted master keys.
 # file_type values: 0 -> public key, 1 -> master key, 2 -> regular file
 CREATE_FILES_TABLE = (
-    "CREATE TABLE IF NOT EXISTS files (id SERIAL, user_id VARCHAR(255), name VARCHAR(255), upload_time VARCHAR(255), file_type INT, PRIMARY KEY (id), FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);"
+    "CREATE TABLE IF NOT EXISTS files (file_id SERIAL, user_id INT, file_name VARCHAR(255), upload_time VARCHAR(255), PRIMARY KEY (id), FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE);"
 )
 
-CREATE_REQUESTS_TABLE = """ CREATE TABLE IF NOT EXISTS requests (file_id INT, sender_id VARCHAR(255), status INT, enc_master_key BINARY(255), 
+CREATE_REQUESTS_TABLE = """ CREATE TABLE IF NOT EXISTS requests (file_id INT, sender_id INT, status INT, enc_master_key BYTEA, 
                             FOREIGN KEY(sender_id) REFERENCES users(id),
                             FOREIGN KEY(file_id) REFERENCES files(id)); """
 

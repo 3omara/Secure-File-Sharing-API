@@ -4,8 +4,8 @@ from flask import Flask, request
 from flask_socketio import SocketIO
 from Database import Database
 from Repository import Repository
-from Models.File import File
-from Models.FileRequest import FileRequest
+from models.File import File
+from models.FileRequest import FileRequest
 import datetime
 
 
@@ -31,8 +31,9 @@ def create_user():
     data = request.get_json()
     user_id = data["id"]
     user_name = data["name"]
+    public_key = data["public_key"]
 
-    repository.insert_user(user_id, user_name)
+    repository.insert_user(user_id, user_name, public_key)
     
     return {"id": user_id}, 201
 
@@ -51,10 +52,8 @@ def upload_data(data):
 
     message = {"file_id": file_id,"file_name":file_name, "user_id":user_id, "user_name":user.name, "upload_time":current_time}
 
-    if(file_type==2):
-        socketio.emit("new_file", message)
+    socketio.emit("new_file", message)
 
-    return message, 201
 
 ######################### create request #########################
 def create_request():
@@ -71,6 +70,9 @@ def refuse_request():
 ######################### login #########################
 @socketio.on("connect")
 def login(user_id):
-    socketio.emit("init_requests")
-    socketio.emit("init_files")
+    session_id = request.sid
+    user_reqs = repository.get_user_requests(user_id)
+    all_files = repository.get_all_files(user_id)
+    socketio.emit("init_requests", user_reqs, to=session_id)
+    socketio.emit("init_files", all_files, to=session_id)
     

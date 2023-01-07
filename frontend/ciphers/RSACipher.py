@@ -4,26 +4,12 @@ import requests
 
 
 class RSACipher:
-    def generate_keys(self, user_id: str) -> str:
+    def generate_keys(self, user_id: str):
         key = RSA.generate(2048)
         private_key = key.export_key()
-
-        # generating a private key and storing it locally
-        file_out = open("private_key.pem", "wb")
-        file_out.write(private_key)
-        file_out.close()
-
-        # generating a public key and uploading it to the server
         public_key = key.publickey().export_key()
-        file_out = open("public_key.pem", "wb")
-        file_out.write(public_key)
-        file_out.close()
 
-        # upload file holding public key information 
-        dictToSend = {'user_id':user_id, 'file_name': 'public_key.pem', 'file_type':0}
-        message = requests.post('http://127.0.0.1:5000/api/upload', json=dictToSend)
-
-        return message
+        return public_key, private_key
 
     def encrypt(self, public_key: bytes, master_key: bytes) -> bytes:
         cipher_rsa = PKCS1_OAEP.new(public_key)
