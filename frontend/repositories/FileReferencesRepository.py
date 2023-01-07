@@ -1,32 +1,38 @@
+from typing import List
 import socketio as sio
-from database.Database import Database
-from shared.Singleton import Singleton
+from shared.ObserverPattern import Subject
 from models.FileReference import FileReference
 
 
-class FileReferencesRepository(metaclass=Singleton):
-    def __init__(self, database: Database, sio_client: sio.Client):
-        self.database = database
-        self.sio_client = sio_client
+class FileReferencesRepository(Subject):
+    def __init__(self, client: sio.Client):
+        super().__init__()
+        self.client = client
+        self.__file_references = [
+            FileReference(
+                id=1,
+                name="file1.txt",
+                owner_id=1,
+                owner_name="user1",
+                master_key=None,
+                uploaded_at="2020-01-01 00:00:00"
+            ),
+        ]
+
+    @property
+    def file_references(self):
+        return [*self.__file_references]
+
+    @file_references.setter
+    def file_references(self, file_references: List[FileReference]):
+        self.__file_references = file_references
+        self.notify_observers()
 
     def insert(self, file: FileReference):
         def on_uploaded(response):
-            file = FileReference.from_json(response)
-            c = self.database.connection.cursor()
-            c.execute(
-                f"INSERT INTO {FileReference.TABLE_NAME} (id, name, owner_id, owner_name, master_key, uploaded_at) VALUES (?, ?, ?, ?, ?, ?)",
-                (file.id, file.name, file.owner_id,
-                 file.owner_name, file.master_key, file.uploaded_at)
-            )
-            self.database.connection.commit()
+            self.file_references = [*self.__file_references,
+                                    FileReference.from_json(response["data"])]
 
-        self.sio_client.emit("upload_file",
-                             file.to_json(),
-                             callback=on_uploaded)
-
-    def get(self, id: int) -> FileReference:
-        c = self.database.connection.cursor()
-        c.execute(
-            f"SELECT * FROM {FileReference.TABLE_NAME} WHERE id = ?", (id,))
-        row = c.fetchone()
-        return FileReference(row[0], row[1], row[2], row[3], row[4], row[5])
+        self.client.emit("upload_file",
+                         file.to_json(),
+                         callback=on_uploaded)
