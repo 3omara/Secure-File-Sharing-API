@@ -6,3 +6,4 @@ python-dotenv
 pycryptodome
 requests
 psycopg2-binary
+pyinstaller
