@@ -87,7 +87,7 @@ def refuse_request():
 
 
 @socketio.on("connect", namespace="/file_references")
-def login():
+def connect():
     user_id = 1
     session_id = request.sid
     user_reqs = repository.get_user_requests(user_id)

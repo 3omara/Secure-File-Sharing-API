@@ -20,7 +20,9 @@ class Subjects:
 
 class App:
     def __init__(self):
-        self.__sio_client = sio.Client()
+        self.__sio_client = sio.Client(
+            logger=True
+        )
         self.__file_references_repository = FileReferencesRepository(
             self.__sio_client
         )
