@@ -19,6 +19,7 @@ class FileRequest:
     sender_name: str
     receiver_id: id
     receiver_name: str
+    master_key: bytes
     status: FileRequestStatus
     sent_at: str
 
@@ -38,6 +39,7 @@ class FileRequest:
                 json["sender_name"],
                 json["receiver_id"],
                 json["receiver_name"],
+                json["master_key"],
                 json["status"],
                 json["sent_at"]
             )
