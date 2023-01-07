@@ -97,12 +97,12 @@ def new_file_request(data):
                   json.dumps(response),
                   namespace="/file_requests",
                   to=sender_sid)
-
-    socketio.emit("new_file_request",
-                  json.dumps(response),
-                  namespace="/file_requests",
-                  to=receiver_sid)
-
+    if(receiver_sid != None):
+        socketio.emit("new_file_request",
+                    json.dumps(response),
+                    namespace="/file_requests",
+                    to=receiver_sid)
+    
     return response
 
 ######################### accept request #########################

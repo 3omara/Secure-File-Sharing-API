@@ -15,6 +15,10 @@ INSERT_REQUEST = (
     "INSERT INTO requests (file_id, sender_id, status, sent_at) VALUES (%s, %s, %s, %s);"
 )
 
+UPDATE_USER_SID = (
+    "UPDATE users SET sid = %s WHERE user_id = %s;"
+)
+
 GET_USER_BY_ID = (
     "SELECT * FROM users WHERE user_id = %s;"
 )
@@ -30,7 +34,12 @@ GET_ALL_FILES = (
 )
 
 GET_USER_REQUESTS = (
-    "SELECT files.file_id, sender_id, user_id, status, enc_master_key FROM files INNER JOIN requests ON files.file_id = requests.file_id WHERE (requests.sender_id = %s OR files.user_id = %s) ;"
+    """ SELECT files.file_id, files.file_name, requests.sender_id, u1.user_name AS sender_name, files.user_id AS receiver_id, 
+                u2.user_name AS receiver_name, requests.status, requests.sent_at, requests.enc_master_key
+        FROM files INNER JOIN requests ON files.file_id = requests.file_id
+        INNER JOIN users u1 ON requests.sender_id = u1.user_id
+        INNER JOIN users u2 ON files.user_id = u2.user_id 
+        WHERE (requests.sender_id = %s OR files.user_id = %s) ; """
 )
 
 
@@ -57,6 +66,11 @@ class Repository(metaclass=Singleton):
         c.execute(INSERT_REQUEST, (file_id, sender_id, status, sent_at))
         self.database.connection.commit()
 
+    def update_user_sid(self, sid, user_id):
+        c = self.database.connection.cursor()
+        c.execute(UPDATE_USER_SID, (sid, user_id))
+        self.database.connection.commit()
+        
     def get_file_with_user(self, file_id):
         c = self.database.connection.cursor()
         c.execute(GET_FILE_BY_ID, (file_id,))
@@ -88,7 +102,8 @@ class Repository(metaclass=Singleton):
         c.execute(GET_USER_REQUESTS, (user_id, user_id))
         res = c.fetchall()
         self.database.connection.commit()
-        keys = ("file_id", "sender_id", "user_id", "status", "enc_master_key")
+        keys = ("file_id", "file_name", "sender_id", "sender_name", "receiver_id", 
+                "receiver_name", "status", "sent_at", "enc_master_key")
         allRequests = []
         for r in res:
             r = {keys[i]: v for i, v in enumerate(r)}
