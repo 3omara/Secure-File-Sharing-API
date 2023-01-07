@@ -83,10 +83,10 @@ def new_file_request(data):
         file_id, sender_id, 0, sent_at
     )
 
-    message = {"file_id": file_id, "file_name":data['file_name'], 
-                "sender_id": data['sender_id'],  "sender_name": data['sender_name'], 
-                "receiver_id": data['receiver_id'], "receiver_name": data['receiver_name'],
-                "status": Status(0).name, "sent_at": sent_at}
+    message = {"file_id": file_id, "file_name": data['file_name'],
+               "sender_id": data['sender_id'],  "sender_name": data['sender_name'],
+               "receiver_id": data['receiver_id'], "receiver_name": data['receiver_name'],
+               "status": Status(0).name, "sent_at": sent_at}
     response = {"status": True, "data": message}
 
     receiver = User()
@@ -102,7 +102,7 @@ def new_file_request(data):
                   json.dumps(response),
                   namespace="/file_requests",
                   to=receiver_sid)
-    
+
     return response
 
 ######################### accept request #########################
@@ -126,20 +126,25 @@ def decline_file_request():
 def delete_file_request():
     pass
 
-######################### login #########################
+######################### Initial Connection #########################
 
 
 @socketio.on("connect", namespace="/file_references")
-def connect():
-    user_id = 1
+def connect_file_references():
     session_id = request.sid
-    user_reqs = repository.get_user_requests(user_id)
     all_files = repository.get_all_files()
-    socketio.emit("init_file_requests",
-                  json.dumps({"status": True, "data": user_reqs}),
-                  namespace="/file_references",
-                  to=session_id)
     socketio.emit("init_file_references",
                   json.dumps({"status": True, "data": all_files}),
                   namespace="/file_references",
+                  to=session_id)
+
+
+@socketio.on("connect", namespace="/file_requests")
+def connect_file_requests():
+    user_id = 1
+    session_id = request.sid
+    user_reqs = repository.get_user_requests(user_id)
+    socketio.emit("init_file_requests",
+                  json.dumps({"status": True, "data": user_reqs}),
+                  namespace="/file_requests",
                   to=session_id)

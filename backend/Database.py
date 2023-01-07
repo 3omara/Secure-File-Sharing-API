@@ -16,7 +16,7 @@ CREATE_FILES_TABLE = (
     "CREATE TABLE IF NOT EXISTS files (file_id SERIAL, user_id INT, file_name VARCHAR(255), upload_time VARCHAR(255), PRIMARY KEY (file_id), FOREIGN KEY(user_id) REFERENCES users(user_id) ON DELETE CASCADE);"
 )
 
-CREATE_REQUESTS_TABLE = """ CREATE TABLE IF NOT EXISTS requests (file_id INT, sender_id INT, status INT, enc_master_key BYTEA, sent_at VARCHAR(255) 
+CREATE_REQUESTS_TABLE = """ CREATE TABLE IF NOT EXISTS requests (file_id INT, sender_id INT, status INT, enc_master_key BYTEA, sent_at VARCHAR(255),
                             FOREIGN KEY(sender_id) REFERENCES users(user_id),
                             FOREIGN KEY(file_id) REFERENCES files(file_id)); """
 

@@ -23,14 +23,15 @@ class Subjects:
 
 class App:
     def __init__(self):
-        self.__sio_client = sio.Client(
-            logger=True
-        )
         self.__file_references_repository = FileReferencesRepository(
-            self.__sio_client
+            sio.Client(
+                logger=True
+            )
         )
         self.__file_requests_repository = FileRequestsRepository(
-            self.__sio_client
+            sio.Client(
+                logger=True
+            )
         )
         self.file_references_service = FileReferencesService(
             self.__file_references_repository
