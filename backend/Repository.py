@@ -11,7 +11,7 @@ INSERT_USER = (
 )
 
 INSERT_FILE = (
-    "INSERT INTO files (user_id, file_name, upload_time) VALUES (%s, %s, %s) RETURNING Inserted.id;"
+    "INSERT INTO files (user_id, file_name, upload_time) VALUES (%s, %s, %s) RETURNING file_id;"
 )
 
 INSERT_REQUEST = (
@@ -47,11 +47,12 @@ class Repository(metaclass=Singleton):
         c.execute(INSERT_USER, (user_id, user_name, public_key))
         self.database.connection.commit()
 
-    def insert_file(self, user_id: int, file_name: str, upload_time: str, file_type: int) -> int:
+    def insert_file(self, user_id: int, file_name: str, upload_time: str) -> int:
         c = self.database.connection.cursor()
-        c.execute(INSERT_FILE, (user_id, file_name, upload_time, file_type))
+        c.execute(INSERT_FILE, (user_id, file_name, upload_time))
         file_id = c.fetchone()
         self.database.connection.commit()
+        print(file_id)
         return file_id
 
     def insert_request(self, file_id, sender_id, status):
@@ -71,7 +72,7 @@ class Repository(metaclass=Singleton):
         c.execute(GET_USER_BY_ID, (user_id,))
         res = c.fetchone()
         self.database.connection.commit()
-        return User(res[0], res[1])
+        return User(res[0], res[1], res[2])
 
     def get_all_files(self):
         c = self.database.connection.cursor()

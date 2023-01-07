@@ -4,3 +4,6 @@
 **/dist/**
 **/build/**
 *.spec
+ftp_storage
+!ftp_storage/.gitkeep
+frontend/secure_ftp_cache

@@ -45,26 +45,26 @@ def create_user():
 
 
 @socketio.on("new_file_reference", namespace="/file_references")
-def new_file_reference(data, callback):
-    user_id = data["user_id"]
-    file_name = data["file_name"]
-    file_type = data["file_type"]
+def new_file_reference(data):
+    data = json.loads(data)
+    user_id = data["owner_id"]
+    file_name = data["name"]
 
     current_time = str(datetime.datetime.now())
 
     file_id = repository.insert_file(
-        user_id, file_name, current_time, file_type)
+        user_id, file_name, current_time)
     user = repository.get_user(user_id)
 
     message = {"id": file_id, "name": file_name,
                "owner_id": user_id, "owner_name": user.name, "uploaded_at": current_time}
     response = {"status": True, "data": message}
-    callback(response)
     socketio.emit("new_file_reference",
                   response,
                   namespace="/file_references",
                   broadcast=True,
                   include_self=False)
+    return response
 
 
 ######################### create request #########################

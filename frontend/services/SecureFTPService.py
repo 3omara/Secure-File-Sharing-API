@@ -54,15 +54,14 @@ class SecureFTPService:
             self.ftp.storbinary(
                 f"STOR {dir + '/' + keys_filename}", encrypted_keys_file)
 
-        # file_reference = FileReference(
-        #     id=0,
-        #     name=PathUtil.get_name(filepath),
-        #     owner_id=1,
-        #     owner_name='Admin',
-        #     master_key=master_keys[0],
-        #     uploaded_at=''
-        # )
-        # self.file_references_repository.insert(file_reference)
+        file_reference = FileReference(
+            id=0,
+            name=PathUtil.get_name(filepath),
+            owner_id=1,
+            owner_name='Admin',
+            uploaded_at=''
+        )
+        self.file_references_repository.insert(file_reference)
 
     def directory_exists(self, dir):
         filelist = []
