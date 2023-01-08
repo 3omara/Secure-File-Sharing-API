@@ -1,6 +1,6 @@
+from __future__ import annotations
 from dataclasses import dataclass
-from json import dumps, loads
-from typing import List, Union
+from typing import Dict, List, Union
 
 
 @dataclass
@@ -13,20 +13,20 @@ class FileReference:
     owner_name: str
     uploaded_at: str
 
-    def to_json(obj: Union[List["FileReference"], "FileReference"]):
+    def to_response(obj: Union[List[FileReference], FileReference]):
         if isinstance(obj, list):
-            return dumps([o.__dict__ for o in obj])
-        return dumps(obj.__dict__)
+            return [o.__dict__ for o in obj]
+        return obj.__dict__
 
-    def from_json(json: str):
-        if isinstance(json, list):
-            return [FileReference.from_json(o) for o in json]
-        if isinstance(json, dict):
+    def from_response(res: Union[List, Dict]):
+        if isinstance(res, list):
+            return [FileReference.from_response(o) for o in res]
+        if isinstance(res, dict):
             return FileReference(
-                json["id"],
-                json["name"],
-                json["owner_id"],
-                json["owner_name"],
-                json["uploaded_at"]
+                res.get("id", None),
+                res.get("name", None),
+                res.get("owner_id", None),
+                res.get("owner_name", None),
+                res.get("uploaded_at", None),
             )
-        return FileReference.from_json(loads(json))
+        return FileReference.from_response(res)

@@ -40,22 +40,22 @@ class FileReferencesRepository(Subject):
     def insert(self, file: FileReference):
         def on_uploaded(response):
             self.file_references = [*self.__file_references,
-                                    FileReference.from_json(response["data"])]
+                                    FileReference.from_response(response["data"])]
 
         self.client.emit("new_file_reference",
-                         file.to_json(),
+                         file.to_response(),
                          callback=on_uploaded,
                          namespace=self.SIO_NAMESPACE)
 
     def __on_init_file_references(self, response):
         response = json.loads(response)
-        self.file_references = [FileReference.from_json(file)
+        self.file_references = [FileReference.from_response(file)
                                 for file in response["data"]]
 
     def __on_new_file_reference(self, response):
         response = json.loads(response)
         self.file_references = [*self.__file_references,
-                                FileReference.from_json(response["data"])]
+                                FileReference.from_response(response["data"])]
 
     def __on_delete_file_reference(self, response):
         response = json.loads(response)

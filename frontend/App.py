@@ -15,12 +15,6 @@ from services.FileRequestsService import FileRequestsService
 from services.SecureFTPService import SecureFTPService
 
 
-@dataclass(frozen=True)
-class Subjects:
-    files: FileReferencesService
-    requests: FileRequestsService
-
-
 class App:
     def __init__(self):
         self.__file_references_repository = FileReferencesRepository(
@@ -56,10 +50,6 @@ class App:
         self.ftp_service.login(
             user=os.getenv("FTP_USER"),
             passwd=os.getenv("FTP_PASSWD")
-        )
-        self.subjects: Subjects = Subjects(
-            files=self.file_references_service,
-            requests=self.file_requests_service
         )
 
     def run(self):

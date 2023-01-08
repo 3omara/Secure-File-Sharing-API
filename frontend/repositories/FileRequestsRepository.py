@@ -47,36 +47,59 @@ class FileRequestsRepository(Subject):
     def insert(self, request: FileRequest):
         def on_uploaded(response):
             self.file_requests = [*self.__file_requests,
-                                  FileRequest.from_json(response["data"])]
-
+                                  FileRequest.from_response(response["data"])]
         self.client.emit("new_file_request",
-                         request.to_json(),
+                         request.to_response(),
                          callback=on_uploaded,
                          namespace=self.SIO_NAMESPACE)
 
+    def delete(self, request: FileRequest):
+        def on_deleted(response):
+            self.file_requests = [request for request in self.__file_requests
+                                  if request.file_id != response["data"]["file_id"]]
+        self.client.emit("delete_file_request",
+                         request.to_response(),
+                         callback=on_deleted,
+                         namespace=self.SIO_NAMESPACE)
+
+    def accept(self, request: FileRequest):
+        def on_accepted(response):
+            self.file_requests = [request if request.sender_id != response["data"]["sender_id"]
+                                  else replace(request, status=FileRequestStatus.ACCEPTED)
+                                  for request in self.__file_requests]
+        self.client.emit("accept_file_request",
+                         request.to_response(),
+                         callback=on_accepted,
+                         namespace=self.SIO_NAMESPACE)
+
+    def decline(self, request: FileRequest):
+        def on_declined(response):
+            self.file_requests = [request if request.sender_id != response["data"]["sender_id"]
+                                  else replace(request, status=FileRequestStatus.DECLINED)
+                                  for request in self.__file_requests]
+        self.client.emit("decline_file_request",
+                         request.to_response(),
+                         callback=on_declined,
+                         namespace=self.SIO_NAMESPACE)
+
     def __on_init_file_requests(self, response):
-        response = json.loads(response)
-        self.file_requests = [FileRequest.from_json(request)
+        self.file_requests = [FileRequest.from_response(request)
                               for request in response["data"]]
 
     def __on_new_file_request(self, response):
-        response = json.loads(response)
         self.file_requests = [*self.__file_requests,
-                              FileRequest.from_json(response["data"])]
+                              FileRequest.from_response(response["data"])]
 
     def __on_delete_file_request(self, response):
-        response = json.loads(response)
         self.file_requests = [request for request in self.__file_requests
                               if request.file_id != response["data"]["file_id"]]
 
     def __on_accept_file_request(self, response):
-        response = json.loads(response)
         self.file_requests = [request if request.file_id != response["data"]["file_id"]
                               else replace(request, status=FileRequestStatus.ACCEPTED)
                               for request in self.__file_requests]
 
     def __on_decline_file_request(self, response):
-        response = json.loads(response)
         self.file_requests = [request if request.file_id != response["data"]["file_id"]
                               else replace(request, status=FileRequestStatus.DECLINED)
                               for request in self.__file_requests]

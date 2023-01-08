@@ -21,3 +21,12 @@ class FileRequestsService(Subject, Observer):
     def update(self, subject):
         if isinstance(subject, FileRequestsRepository):
             self.file_requests = subject.file_requests
+
+    def accept(self, file_request):
+        self.file_requests_repository.accept(file_request)
+
+    def decline(self, file_request):
+        self.file_requests_repository.decline(file_request)
+
+    def cancel(self, file_request):
+        self.file_requests_repository.delete(file_request)

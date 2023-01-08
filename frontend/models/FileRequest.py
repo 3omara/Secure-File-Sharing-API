@@ -1,7 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
-from json import dumps, loads
-from typing import List, Union
+from typing import Dict, List, Union
 from enum import Enum
 
 
@@ -23,24 +22,24 @@ class FileRequest:
     status: FileRequestStatus
     sent_at: str
 
-    def to_json(obj: Union[List[FileRequest], FileRequest]):
+    def to_response(obj: Union[List[FileRequest], FileRequest]):
         if isinstance(obj, list):
-            return dumps([o.__dict__ for o in obj])
-        return dumps(obj.__dict__)
+            return [o.__dict__ for o in obj]
+        return obj.__dict__
 
-    def from_json(json: str):
-        if isinstance(json, list):
-            return [FileRequest.from_json(o) for o in json]
-        if isinstance(json, dict):
+    def from_response(res: Union[List, Dict]):
+        if isinstance(res, list):
+            return [FileRequest.from_response(o) for o in res]
+        if isinstance(res, dict):
             return FileRequest(
-                json["file_id"],
-                json["file_name"],
-                json["sender_id"],
-                json["sender_name"],
-                json["receiver_id"],
-                json["receiver_name"],
-                json["master_key"],
-                json["status"],
-                json["sent_at"]
+                res.get("file_id", None),
+                res.get("file_name", None),
+                res.get("sender_id", None),
+                res.get("sender_name", None),
+                res.get("receiver_id", None),
+                res.get("receiver_name", None),
+                res.get("master_key", None),
+                res.get("status", None),
+                res.get("sent_at", None),
             )
-        return FileRequest.from_json(loads(json))
+        return FileRequest.from_response(res)
