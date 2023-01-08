@@ -6,3 +6,4 @@ class User:
     id: int
     name: str
     public_key: bytes
+    sid: str

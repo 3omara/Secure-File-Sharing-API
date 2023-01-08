@@ -19,8 +19,12 @@ UPDATE_USER_SID = (
     "UPDATE users SET sid = %s WHERE user_id = %s;"
 )
 
+UPDATE_REQUEST = (
+    "UPDATE requests SET status = %s, enc_master_key = %s WHERE (file_id, sender_id) = (%s, %s);"
+)
+
 GET_USER_BY_ID = (
-    "SELECT * FROM users WHERE user_id = %s;"
+    "SELECT user_id, user_name, public_key, sid FROM users WHERE user_id = %s;"
 )
 
 GET_FILE_BY_ID = (
@@ -40,6 +44,10 @@ GET_USER_REQUESTS = (
         INNER JOIN users u1 ON requests.sender_id = u1.user_id
         INNER JOIN users u2 ON files.user_id = u2.user_id 
         WHERE (requests.sender_id = %s OR files.user_id = %s) ; """
+)
+
+DELETE_REQUEST = (
+    "DELETE FROM requests WHERE (file_id, sender_id) = (%s, %s);"
 )
 
 
@@ -69,6 +77,11 @@ class Repository(metaclass=Singleton):
     def update_user_sid(self, sid, user_id):
         c = self.database.connection.cursor()
         c.execute(UPDATE_USER_SID, (sid, user_id))
+        self.database.connection.commit()
+
+    def update_request(self, status, enc_master_key, file_id, sender_id):
+        c = self.database.connection.cursor()
+        c.execute(UPDATE_REQUEST, (status, enc_master_key, file_id, sender_id))
         self.database.connection.commit()
         
     def get_file_with_user(self, file_id):
@@ -109,3 +122,8 @@ class Repository(metaclass=Singleton):
             r = {keys[i]: v for i, v in enumerate(r)}
             allRequests.append(r)
         return allRequests
+
+    def delete_request(self, file_id, sender_id):
+        c = self.database.connection.cursor()
+        c.execute(DELETE_REQUEST, (file_id, sender_id))
+        self.database.connection.commit()
