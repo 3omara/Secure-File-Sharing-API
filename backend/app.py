@@ -94,12 +94,12 @@ def new_file_request(data):
                   response,
                   namespace="/file_requests",
                   to=sender_sid)
-    if(receiver_sid != None):
+    if (receiver_sid != None):
         socketio.emit("new_file_request",
-                    response,
-                    namespace="/file_requests",
-                    to=receiver_sid)
-    
+                      response,
+                      namespace="/file_requests",
+                      to=receiver_sid)
+
     return response
 
 ######################### accept request #########################
@@ -113,19 +113,18 @@ def accept_file_request(data):
 
     repository.update_request(1, master_key, file_id, sender_id)
     message = {
-        "file_id":file_id, "master_key": master_key
+        "file_id": file_id, "master_key": master_key
     }
     response = {"status": True, "message": message}
 
     sender = repository.get_user(sender_id)
     sender_sid = sender.sid
 
-    if(sender_sid != None):
+    if (sender_sid != None):
         socketio.emit("accept_file_request",
-                    response,
-                    namespace="/file_requests",
-                    to=sender_sid)
-
+                      response,
+                      namespace="/file_requests",
+                      to=sender_sid)
 
 
 ######################### decline request #########################
@@ -138,18 +137,18 @@ def decline_file_request(data):
 
     repository.update_request(2, None, file_id, sender_id)
     message = {
-        "file_id":file_id
+        "file_id": file_id
     }
     response = {"status": True, "message": message}
 
     sender = repository.get_user(sender_id)
     sender_sid = sender.sid
 
-    if(sender_sid != None):
+    if (sender_sid != None):
         socketio.emit("decline_file_request",
-                    response,
-                    namespace="/file_requests",
-                    to=sender_sid)
+                      response,
+                      namespace="/file_requests",
+                      to=sender_sid)
 
 ######################### delete request #########################
 
@@ -161,21 +160,21 @@ def delete_file_request(data):
     receiver_id = data['receiver_id']
 
     repository.delete_request(file_id, sender_id)
-    message= {
-        "file_id":file_id
+    message = {
+        "file_id": file_id
     }
     response = {
-        "status":True, "message": message
+        "status": True, "message": message
     }
 
     receiver = repository.get_user(receiver_id)
     receiver_sid = receiver.sid
 
-    if(receiver_sid != None):
+    if (receiver_sid != None):
         socketio.emit("delete_file_request",
-                    response,
-                    namespace="/file_requests",
-                    to=receiver_sid)
+                      response,
+                      namespace="/file_requests",
+                      to=receiver_sid)
 
 
 ######################### Initial Connection #########################

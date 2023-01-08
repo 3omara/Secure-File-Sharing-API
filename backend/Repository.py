@@ -2,7 +2,7 @@ from shared.Singleton import Singleton
 from Database import Database
 from models.User import User
 
-
+print(b"hello")
 INSERT_USER = (
     "INSERT INTO users (user_id, user_name, public_key, sid) VALUES (%s, %s, %s, %s);"
 )
@@ -83,7 +83,7 @@ class Repository(metaclass=Singleton):
         c = self.database.connection.cursor()
         c.execute(UPDATE_REQUEST, (status, enc_master_key, file_id, sender_id))
         self.database.connection.commit()
-        
+
     def get_file_with_user(self, file_id):
         c = self.database.connection.cursor()
         c.execute(GET_FILE_BY_ID, (file_id,))
@@ -115,11 +115,13 @@ class Repository(metaclass=Singleton):
         c.execute(GET_USER_REQUESTS, (user_id, user_id))
         res = c.fetchall()
         self.database.connection.commit()
-        keys = ("file_id", "file_name", "sender_id", "sender_name", "receiver_id", 
+        keys = ("file_id", "file_name", "sender_id", "sender_name", "receiver_id",
                 "receiver_name", "status", "sent_at", "enc_master_key")
         allRequests = []
         for r in res:
             r = {keys[i]: v for i, v in enumerate(r)}
+            if r["enc_master_key"] is not None:
+                r["enc_master_key"] = r["enc_master_key"].tobytes()
             allRequests.append(r)
         return allRequests
 
