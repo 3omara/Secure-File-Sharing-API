@@ -3,6 +3,13 @@ from dataclasses import dataclass
 from typing import Dict, List, Union
 
 
+class FileAccess:
+    PERMITTED = "permitted"
+    DENIED = "denied"
+    NOT_REQUESTED = "not_requested"
+    REQUESTED = "requested"
+
+
 @dataclass
 class FileReference:
     TABLE_NAME = "file_references"
@@ -12,6 +19,7 @@ class FileReference:
     owner_id: int
     owner_name: str
     uploaded_at: str
+    access: FileAccess = FileAccess.NOT_REQUESTED
 
     def to_response(obj: Union[List[FileReference], FileReference]):
         if isinstance(obj, list):

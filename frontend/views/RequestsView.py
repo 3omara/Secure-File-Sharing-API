@@ -11,7 +11,7 @@ class RequestsView(View):
         self.user_id = 1
         # (file_id, sender_id) -> FileRequest
         self.__file_request_by_ids = {}
-        columns = ('From', 'File')
+        columns = ('From', 'To', 'File')
         self.tree = ttk.Treeview(self.parent,
                                  columns=columns,
                                  show='headings')
@@ -43,6 +43,7 @@ class RequestsView(View):
         for file_request in self.app.file_requests_service.file_requests:
             self.tree.insert('', tk.END,
                              values=(file_request.sender_name,
+                                     file_request.receiver_name,
                                      file_request.file_name),
                              tags=(file_request.file_id,
                                    file_request.sender_id,

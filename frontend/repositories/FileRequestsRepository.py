@@ -9,6 +9,7 @@ from models.FileRequest import FileRequest, FileRequestStatus
 
 class FileRequestsRepository(Subject):
     SIO_NAMESPACE = "/file_requests"
+    USER_ID = 1
 
     def __init__(self, client: sio.Client):
         super().__init__()
@@ -31,7 +32,7 @@ class FileRequestsRepository(Subject):
                        namespace=self.SIO_NAMESPACE)
         self.client.connect(
             os.getenv("SIO_HOST"),
-            auth={"user_id": 1},
+            auth={"user_id": self.USER_ID},
             transports=["polling", "websocket"],
             namespaces=[self.SIO_NAMESPACE],
         )
@@ -56,8 +57,8 @@ class FileRequestsRepository(Subject):
 
     def delete(self, request: FileRequest):
         def on_deleted(response):
-            self.file_requests = [request for request in self.__file_requests
-                                  if request.file_id != response["data"]["file_id"]]
+            self.file_requests = [req for req in self.__file_requests
+                                  if req.file_id != request.file_id]
         self.client.emit("delete_file_request",
                          request.to_response(),
                          callback=on_deleted,
@@ -65,9 +66,9 @@ class FileRequestsRepository(Subject):
 
     def accept(self, request: FileRequest):
         def on_accepted(response):
-            self.file_requests = [request if request.sender_id != response["data"]["sender_id"]
-                                  else replace(request, status=FileRequestStatus.ACCEPTED)
-                                  for request in self.__file_requests]
+            self.file_requests = [req if req.sender_id != request.sender_id
+                                  else replace(req, status=FileRequestStatus.ACCEPTED)
+                                  for req in self.__file_requests]
         self.client.emit("accept_file_request",
                          request.to_response(),
                          callback=on_accepted,
@@ -75,9 +76,9 @@ class FileRequestsRepository(Subject):
 
     def decline(self, request: FileRequest):
         def on_declined(response):
-            self.file_requests = [request if request.sender_id != response["data"]["sender_id"]
-                                  else replace(request, status=FileRequestStatus.DECLINED)
-                                  for request in self.__file_requests]
+            self.file_requests = [req if req.sender_id != request.sender_id
+                                  else replace(req, status=FileRequestStatus.DECLINED)
+                                  for req in self.__file_requests]
         self.client.emit("decline_file_request",
                          request.to_response(),
                          callback=on_declined,
@@ -101,7 +102,6 @@ class FileRequestsRepository(Subject):
                               for request in self.__file_requests]
 
     def __on_decline_file_request(self, response):
-        print(response)
         self.file_requests = [request if request.file_id != response["data"]["file_id"]
                               else replace(request, status=FileRequestStatus.DECLINED)
                               for request in self.__file_requests]

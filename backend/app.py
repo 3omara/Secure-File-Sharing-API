@@ -55,7 +55,6 @@ def new_file_reference(data):
     file_id = repository.insert_file(
         user_id, file_name, current_time)
     user = repository.get_user(user_id)
-
     message = {"id": file_id, "name": file_name,
                "owner_id": user_id, "owner_name": user.name, "uploaded_at": current_time}
     response = {"status": True, "data": message}
@@ -112,10 +111,10 @@ def accept_file_request(data):
     master_key = data['master_key']
 
     repository.update_request(1, master_key, file_id, sender_id)
-    message = {
+    data = {
         "file_id": file_id, "master_key": master_key
     }
-    response = {"status": True, "message": message}
+    response = {"status": True, "data": data}
 
     sender = repository.get_user(sender_id)
     sender_sid = sender.sid
@@ -125,6 +124,7 @@ def accept_file_request(data):
                       response,
                       namespace="/file_requests",
                       to=sender_sid)
+    return response
 
 
 ######################### decline request #########################
@@ -136,10 +136,10 @@ def decline_file_request(data):
     file_id = data['file_id']
 
     repository.update_request(2, None, file_id, sender_id)
-    message = {
+    data = {
         "file_id": file_id
     }
-    response = {"status": True, "message": message}
+    response = {"status": True, "data": data}
 
     sender = repository.get_user(sender_id)
     sender_sid = sender.sid
@@ -149,6 +149,7 @@ def decline_file_request(data):
                       response,
                       namespace="/file_requests",
                       to=sender_sid)
+    return response
 
 ######################### delete request #########################
 
@@ -160,11 +161,11 @@ def delete_file_request(data):
     receiver_id = data['receiver_id']
 
     repository.delete_request(file_id, sender_id)
-    message = {
+    data = {
         "file_id": file_id
     }
     response = {
-        "status": True, "message": message
+        "status": True, "data": data
     }
 
     receiver = repository.get_user(receiver_id)
@@ -175,6 +176,7 @@ def delete_file_request(data):
                       response,
                       namespace="/file_requests",
                       to=receiver_sid)
+    return response
 
 
 ######################### Initial Connection #########################

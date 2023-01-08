@@ -1,6 +1,7 @@
 import os
 from typing import List
 import socketio as sio
+from database.Database import Database
 from shared.ObserverPattern import Subject
 from models.FileReference import FileReference
 
@@ -8,9 +9,10 @@ from models.FileReference import FileReference
 class FileReferencesRepository(Subject):
     SIO_NAMESPACE = "/file_references"
 
-    def __init__(self, client: sio.Client):
+    def __init__(self, client: sio.Client, local_db: Database):
         super().__init__()
         self.client = client
+        self.local_db = local_db
         self.__file_references = []
         self.client.on("init_file_references",
                        self.__on_init_file_references,
@@ -36,10 +38,13 @@ class FileReferencesRepository(Subject):
         self.__file_references = file_references
         self.notify_observers()
 
-    def insert(self, file: FileReference):
+    def insert(self, file: FileReference, master_key: bytes):
         def on_uploaded(response):
+            new_file_reference = FileReference.from_response(response["data"])
             self.file_references = [*self.__file_references,
-                                    FileReference.from_response(response["data"])]
+                                    new_file_reference]
+            self.local_db.insert_master_key(new_file_reference.id,
+                                            master_key,)
 
         self.client.emit("new_file_reference",
                          file.to_response(),

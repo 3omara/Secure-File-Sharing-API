@@ -1,13 +1,13 @@
 import os
 from ftplib import FTP
 from ttkthemes import ThemedTk
-from dataclasses import dataclass
 import socketio as sio
 
 from ciphers.AESCipher import AESCipher
 from ciphers.DESCipher import DESCipher
 from ciphers.BlowfishCipher import BlowfishCipher
 from ciphers.FileCipher import FileCipher
+from database.Database import Database
 from repositories.FileReferencesRepository import FileReferencesRepository
 from repositories.FileRequestsRepository import FileRequestsRepository
 from services.FileReferencesService import FileReferencesService
@@ -20,7 +20,8 @@ class App:
         self.__file_references_repository = FileReferencesRepository(
             sio.Client(
                 logger=True
-            )
+            ),
+            Database()
         )
         self.__file_requests_repository = FileRequestsRepository(
             sio.Client(
@@ -28,7 +29,8 @@ class App:
             )
         )
         self.file_references_service = FileReferencesService(
-            self.__file_references_repository
+            self.__file_references_repository,
+            self.__file_requests_repository
         )
         self.file_requests_service = FileRequestsService(
             self.__file_requests_repository

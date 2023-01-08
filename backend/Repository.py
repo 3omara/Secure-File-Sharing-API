@@ -67,8 +67,7 @@ class Repository(metaclass=Singleton):
         c.execute(INSERT_FILE, (user_id, file_name, upload_time))
         file_id = c.fetchone()
         self.database.connection.commit()
-        print(file_id)
-        return file_id
+        return file_id[0]
 
     def insert_request(self, file_id: int, sender_id: int, status: int, sent_at: str):
         c = self.database.connection.cursor()

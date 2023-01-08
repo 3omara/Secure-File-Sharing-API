@@ -1,7 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass
 from typing import Dict, List, Union
-from enum import Enum
 
 
 class FileRequestStatus:
@@ -19,7 +18,7 @@ class FileRequest:
     receiver_id: id
     receiver_name: str
     master_key: bytes
-    status: FileRequestStatus
+    status: str
     sent_at: str
 
     def to_response(obj: Union[List[FileRequest], FileRequest]):

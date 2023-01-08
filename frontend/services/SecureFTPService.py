@@ -61,7 +61,7 @@ class SecureFTPService:
             owner_name='Admin',
             uploaded_at=''
         )
-        self.file_references_repository.insert(file_reference)
+        self.file_references_repository.insert(file_reference, master_keys[0])
 
     def directory_exists(self, dir):
         filelist = []
