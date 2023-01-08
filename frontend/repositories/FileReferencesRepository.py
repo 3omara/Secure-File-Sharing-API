@@ -1,4 +1,3 @@
-import json
 import os
 from typing import List
 import socketio as sio
@@ -48,16 +47,13 @@ class FileReferencesRepository(Subject):
                          namespace=self.SIO_NAMESPACE)
 
     def __on_init_file_references(self, response):
-        response = json.loads(response)
         self.file_references = [FileReference.from_response(file)
                                 for file in response["data"]]
 
     def __on_new_file_reference(self, response):
-        response = json.loads(response)
         self.file_references = [*self.__file_references,
                                 FileReference.from_response(response["data"])]
 
     def __on_delete_file_reference(self, response):
-        response = json.loads(response)
         self.file_references = [file for file in self.__file_references
                                 if file.id != response["data"]["id"]]

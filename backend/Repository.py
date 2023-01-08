@@ -1,3 +1,4 @@
+from models.File import Status
 from shared.Singleton import Singleton
 from Database import Database
 from models.User import User
@@ -122,6 +123,7 @@ class Repository(metaclass=Singleton):
             r = {keys[i]: v for i, v in enumerate(r)}
             if r["enc_master_key"] is not None:
                 r["enc_master_key"] = r["enc_master_key"].tobytes()
+            r["status"] = Status(r["status"]).name
             allRequests.append(r)
         return allRequests
 

@@ -4,7 +4,7 @@ from typing import Dict, List, Union
 from enum import Enum
 
 
-class FileRequestStatus(Enum):
+class FileRequestStatus:
     PENDING = "pending"
     ACCEPTED = "accepted"
     DECLINED = "declined"

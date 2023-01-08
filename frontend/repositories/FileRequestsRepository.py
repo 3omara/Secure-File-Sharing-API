@@ -31,8 +31,9 @@ class FileRequestsRepository(Subject):
                        namespace=self.SIO_NAMESPACE)
         self.client.connect(
             os.getenv("SIO_HOST"),
+            auth={"user_id": 1},
             transports=["polling", "websocket"],
-            namespaces=[self.SIO_NAMESPACE]
+            namespaces=[self.SIO_NAMESPACE],
         )
 
     @property
@@ -100,6 +101,7 @@ class FileRequestsRepository(Subject):
                               for request in self.__file_requests]
 
     def __on_decline_file_request(self, response):
+        print(response)
         self.file_requests = [request if request.file_id != response["data"]["file_id"]
                               else replace(request, status=FileRequestStatus.DECLINED)
                               for request in self.__file_requests]
