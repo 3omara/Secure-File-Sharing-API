@@ -1,8 +1,6 @@
 import os
 from ftplib import FTP
 from typing import List
-from ttkthemes import ThemedTk
-from tkinter import messagebox
 import socketio as sio
 
 from ciphers.AESCipher import AESCipher
@@ -20,6 +18,14 @@ from services.SecureFTPService import SecureFTPService
 class App:
     def __init__(self):
         self.sio_clients: List[sio.Client] = []
+        self.__file_references_repository = None
+        self.__file_requests_repository = None
+        self.file_references_service = None
+        self.file_requests_service = None
+        self.ftp_service = None
+        self.user_id = None
+
+    def initialize_services(self):
         self.sio_clients.append(sio.Client(logger=True))
         self.__file_references_repository = FileReferencesRepository(
             self.sio_clients[-1],
@@ -56,23 +62,15 @@ class App:
         )
 
     def run(self):
-        self.setup_window()
-        self.window.mainloop()
+        from views.LoginView import LoginView
+        LoginView(None).build(self)
 
-    def setup_window(self):
-        self.width = 1000
-        self.height = 600
-        self.window = ThemedTk(theme="arc")
-        self.window.title("Vault")
-        self.window.geometry(f"{self.width}x{self.height}")
-        self.window.resizable(False, False)
-        self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
-        from views.MainView import MainView
-        MainView(self.window).build(self)
+        if self.user_id is not None:
+            self.initialize_services()
+            from views.MainView import MainView
+            MainView(None).build(self)
 
     def on_closing(self):
-        if messagebox.askokcancel("Quit", "Do you want to quit?"):
-            self.window.destroy()
-            Database().close()
-            for sio_client in self.sio_clients:
-                sio_client.disconnect()
+        Database().close()
+        for sio_client in self.sio_clients:
+            sio_client.disconnect()

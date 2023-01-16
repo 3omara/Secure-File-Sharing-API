@@ -1,65 +1,70 @@
-from views.View import View
 import tkinter as tk
+from ttkthemes import ThemedTk
 from tkinter import ttk
-from tkinter import *       
-from views.MainView import MainView
-from database.Database import Database
+from tkinter import *
 import requests
+
+from database.Database import Database
 from ciphers.RSACipher import RSACipher
-import App
-import json
+from views.View import View
 
 
-def submit():
-    name = uname_var.get()
-    password = pass_var.get()
-    
-    print("The name is : " + name)
-    print("The password is : " + password)
-    
-    try:
-        public_key = "None"
-        database = Database()
-        if(database.get_private_key(name)==None):
-            public_key, private_key = RSACipher().generate_keys()
-            database.insert_private_key(name, private_key)
-        
-        data = {"user_name":name, "password": password, "public_key": public_key}
-        res = requests.post("http://127.0.0.1:5000/login", data=data)
+class LoginView(View):
 
-        print("status_code", res.status_code)
-        App.App().run()
-        root.destroy()
-    except:
-        uname_var.set("")
-        pass_var.set("")
+    def setup_view(self):
+        self.root = ThemedTk(theme="arc")
 
+        self.uname_var = tk.StringVar()
+        self.pass_var = tk.StringVar()
 
-root = Tk()
+        self.label = ttk.Label(self.root, text="Welcome!")
+        self.label.pack(padx=20, pady=20)
 
-uname_var=tk.StringVar()
-pass_var=tk.StringVar()
+        self.usernameframe = ttk.Frame(self.root)
+        self.usernameframe.pack()
 
-label = tk.Label(root, text="Welcome!", font=('Arial', 18))
-label.pack(padx=20, pady=20)
+        self.passwordframe = ttk.Frame(self.root)
+        self.passwordframe.pack()
 
-usernameframe = ttk.Frame(root)
-usernameframe.pack()
+        self.usernameLabel = ttk.Label(self.usernameframe, text="Username")
+        self.usernameLabel.pack(padx=5, side='left')
+        self.usernameEntry = ttk.Entry(
+            self.usernameframe, textvariable=self.uname_var)
+        self.usernameEntry.pack(pady=10, padx=5, side='left')
 
-passwordframe = ttk.Frame(root)
-passwordframe.pack()
+        self.passLabel = ttk.Label(self.passwordframe, text="Password")
+        self.passLabel.pack(padx=5, side='left')
+        self.passEntry = ttk.Entry(
+            self.passwordframe, textvariable=self.pass_var, show="*")
+        self.passEntry.pack(pady=10, padx=5, side='left')
 
-usernameLabel = tk.Label(usernameframe, text="Username", font=('Arial', 16))
-usernameLabel.pack(padx=5, side='left')
-usernameEntry =tk.Entry(usernameframe, textvariable = uname_var, font=('Arial', 16))
-usernameEntry.pack(pady=10, side='left')
+        self.submitBtn = ttk.Button(
+            self.root, command=self.submit, text="Register/ Login")
+        self.submitBtn.pack(padx=50, pady=20)
 
-passLabel = tk.Label(passwordframe, text="Password", font=('Arial', 16))
-passLabel.pack(padx=5, side='left')
-passEntry =tk.Entry(passwordframe, textvariable = pass_var, show="*", font=('Arial', 16))
-passEntry.pack(pady=10, side='left')
+        self.root.mainloop()
 
-submitBtn = tk.Button(root, command = submit, text="Register/ Login", font=('Arial', 18))
-submitBtn.pack(padx=50, pady=20)
+    def submit(self):
+        name = self.uname_var.get()
+        password = self.pass_var.get()
 
+        print("The name is : " + name)
+        print("The password is : " + password)
 
+        try:
+            public_key = "None"
+            database = Database()
+            if (database.get_private_key(name) == None):
+                public_key, private_key = RSACipher().generate_keys()
+                database.insert_private_key(name, private_key)
+
+            data = {"user_name": name, "password": password,
+                    "public_key": public_key}
+            res = requests.post("http://127.0.0.1:5000/login", data=data)
+
+            self.root.destroy()
+            print("USERID", res.json()['id'])
+            self.app.user_id = res.json()['id']
+        except:
+            self.uname_var.set("")
+            self.pass_var.set("")
