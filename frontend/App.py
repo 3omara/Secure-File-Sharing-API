@@ -1,6 +1,8 @@
 import os
 from ftplib import FTP
+from typing import List
 from ttkthemes import ThemedTk
+from tkinter import messagebox
 import socketio as sio
 
 from ciphers.AESCipher import AESCipher
@@ -17,16 +19,15 @@ from services.SecureFTPService import SecureFTPService
 
 class App:
     def __init__(self):
+        self.sio_clients: List[sio.Client] = []
+        self.sio_clients.append(sio.Client(logger=True))
         self.__file_references_repository = FileReferencesRepository(
-            sio.Client(
-                logger=True
-            ),
+            self.sio_clients[-1],
             Database()
         )
+        self.sio_clients.append(sio.Client(logger=True))
         self.__file_requests_repository = FileRequestsRepository(
-            sio.Client(
-                logger=True
-            )
+            self.sio_clients[-1],
         )
         self.file_references_service = FileReferencesService(
             self.__file_references_repository,
@@ -65,5 +66,13 @@ class App:
         self.window.title("Vault")
         self.window.geometry(f"{self.width}x{self.height}")
         self.window.resizable(False, False)
+        self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
         from views.MainView import MainView
         MainView(self.window).build(self)
+
+    def on_closing(self):
+        if messagebox.askokcancel("Quit", "Do you want to quit?"):
+            self.window.destroy()
+            Database().close()
+            for sio_client in self.sio_clients:
+                sio_client.disconnect()

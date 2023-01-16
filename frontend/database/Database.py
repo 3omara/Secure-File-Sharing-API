@@ -41,3 +41,6 @@ class Database(metaclass=Singleton):
         if row is None:
             return None
         return row
+
+    def close(self):
+        self.connection.close()

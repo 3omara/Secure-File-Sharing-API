@@ -7,3 +7,5 @@ pycryptodome
 requests
 psycopg2-binary
 pyinstaller
+ttkthemes
+autopep8
