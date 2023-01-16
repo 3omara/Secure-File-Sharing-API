@@ -1,27 +1,43 @@
-import ftplib
-import json
-from dotenv import load_dotenv
-from flask import Flask, request
+from flask import Flask, request,session
 from flask_socketio import SocketIO
 from Database import Database
 from Repository import Repository
 from models.File import File, Status
 from models.User import User
-from models.FileRequest import FileRequest
 import datetime
+from flask_login import UserMixin, login_user, LoginManager, login_required, current_user, logout_user 
+from flask_bcrypt import Bcrypt
 
 
-# FTP server credentials
-FTP_HOST = "127.0.0.1"
-FTP_PORT = 6060
-FTP_USER = "youssef"
-FTP_PASS = "1234"
-
-app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
+app = Flask(__name__)   
+app.secret_key = "SECRETKEY"
+bcrypt = Bcrypt(app)
 
 database = Database()
 repository = Repository(database)
+
+login_manager = LoginManager()
+login_manager.init_app(app)
+socketio = SocketIO(app, cors_allowed_origins="*")
+
+# login_manager.login_view = "login"
+
+@login_manager.user_loader
+def load_user(id):
+    try:
+        print("LOADING USER")
+        return repository.get_user(int(id))
+    except:
+        print("LOADING USER EXCEPTION")
+        return None
+
+# @login_manager.request_loader
+# def request_loader(request):
+#     print("request: ",request)
+#     user_id = request.form.get('email')
+#     if user_id == None:
+#         return
+#     return repository.get_user(int(user_id))
 
 
 @app.route("/")
@@ -31,21 +47,57 @@ def home():
 ######################### create user #########################
 
 
-@app.route("/api/user", methods=['POST'])
-def create_user():
-    data = request.get_json()
-    user_id = data["id"]
-    user_name = data["name"]
-    public_key = data["public_key"]
+@app.route("/login", methods=['POST'])
+def login():
+    session.pop('id', None)
+    user_name = request.form["user_name"]
+    password = request.form["password"]
+    public_key = request.form["public_key"]
+    print("Entered Password: ",  password)
+    hashed_password = bcrypt.generate_password_hash(password).decode('utf8')
+    print("ARRIVED")
+    user = repository.get_user_by_name(user_name)
+    if(user!=None):
+        print(user.password, password)
+        if bcrypt.check_password_hash(user.password, password):
+            if(public_key!="None"):
+                repository.update_user_pkey(public_key, user_id)
+            session['id'] = user.id
+            print("user already registered: ", user)
+            login_user(user)
 
-    repository.insert_user(user_id, user_name, public_key)
+            return {"id": user.id, "user_name": user.user_name}, 201
+        else:
+            return "Failed to login", 404
+    else:
+        user_id = repository.insert_user(user_name, hashed_password, public_key)
+        user = repository.get_user(user_id)
+        print("first time: ", user)
+        session['id'] = user.id
+        login_user(user)
+        return {"id": user_id, "user_name": user_name}, 201
 
-    return {"id": user_id}, 201
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    session.pop('id', None)
+    return 'Logged out'
+
+@app.before_first_request
+def init_app():
+    print("before first request")
+    logout_user()
+
+@login_manager.unauthorized_handler
+def unauthorized_handler():
+    return 'Unauthorized', 401
 
 ######################### upload data #########################
 
 
 @socketio.on("new_file_reference", namespace="/file_references")
+@login_required
 def new_file_reference(data):
     user_id = data["owner_id"]
     file_name = data["name"]
@@ -70,6 +122,7 @@ def new_file_reference(data):
 
 
 @socketio.on("new_file_request", namespace="/file_requests")
+@login_required
 def new_file_request(data):
     sender_sid = request.sid
     sender_id = data['sender_id']
@@ -93,18 +146,19 @@ def new_file_request(data):
                   response,
                   namespace="/file_requests",
                   to=sender_sid)
-    if (receiver_sid != None):
+    if(receiver_sid != None):
         socketio.emit("new_file_request",
-                      response,
-                      namespace="/file_requests",
-                      to=receiver_sid)
-
+                    response,
+                    namespace="/file_requests",
+                    to=receiver_sid)
+    
     return response
 
 ######################### accept request #########################
 
 
 @socketio.on("accept_file_request", namespace="/file_requests")
+@login_required
 def accept_file_request(data):
     sender_id = data['sender_id']
     file_id = data['file_id']
@@ -119,7 +173,7 @@ def accept_file_request(data):
     sender = repository.get_user(sender_id)
     sender_sid = sender.sid
 
-    if (sender_sid != None):
+    if(sender_sid != None):
         socketio.emit("accept_file_request",
                       response,
                       namespace="/file_requests",
@@ -131,6 +185,7 @@ def accept_file_request(data):
 
 
 @socketio.on("decline_file_request", namespace="/file_requests")
+@login_required
 def decline_file_request(data):
     sender_id = data['sender_id']
     file_id = data['file_id']
@@ -144,7 +199,7 @@ def decline_file_request(data):
     sender = repository.get_user(sender_id)
     sender_sid = sender.sid
 
-    if (sender_sid != None):
+    if(sender_sid != None):
         socketio.emit("decline_file_request",
                       response,
                       namespace="/file_requests",
@@ -155,6 +210,7 @@ def decline_file_request(data):
 
 
 @socketio.on("delete_file_request", namespace="/file_requests")
+@login_required
 def delete_file_request(data):
     sender_id = data['sender_id']
     file_id = data['file_id']
@@ -171,7 +227,7 @@ def delete_file_request(data):
     receiver = repository.get_user(receiver_id)
     receiver_sid = receiver.sid
 
-    if (receiver_sid != None):
+    if(receiver_sid != None):
         socketio.emit("delete_file_request",
                       response,
                       namespace="/file_requests",
@@ -183,6 +239,7 @@ def delete_file_request(data):
 
 
 @socketio.on("connect", namespace="/file_references")
+@login_required
 def connect_file_references():
     session_id = request.sid
     all_files = repository.get_all_files()
@@ -193,9 +250,12 @@ def connect_file_references():
 
 
 @socketio.on("connect", namespace="/file_requests")
+@login_required
 def connect_file_requests():
-    user_id = 1
+    user_id = current_user.id
+    print("requests - user id:  ", user_id)
     session_id = request.sid
+    repository.update_user_sid(session_id, user_id)
     user_reqs = repository.get_user_requests(user_id)
     socketio.emit("init_file_requests",
                   {"status": True, "data": user_reqs},

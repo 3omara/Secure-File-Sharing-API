@@ -1,5 +1,4 @@
-flask
-flask-socketio
+autopep8
 python-ftp-server
 python-socketio[client]
 python-dotenv
@@ -8,4 +7,7 @@ requests
 psycopg2-binary
 pyinstaller
 ttkthemes
-autopep8
+flask
+flask-socketio
+Flask-Login
+Flask-Bcrypt

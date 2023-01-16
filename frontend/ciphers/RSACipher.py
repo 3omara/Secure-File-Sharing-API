@@ -4,7 +4,7 @@ import requests
 
 
 class RSACipher:
-    def generate_keys(self, user_id: str):
+    def generate_keys(self):
         key = RSA.generate(2048)
         private_key = key.export_key()
         public_key = key.publickey().export_key()

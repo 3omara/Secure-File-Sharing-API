@@ -30,9 +30,9 @@ class FileRequestsRepository(Subject):
         self.client.on("decline_file_request",
                        self.__on_decline_file_request,
                        namespace=self.SIO_NAMESPACE)
+        print("init_requests")
         self.client.connect(
             os.getenv("SIO_HOST"),
-            auth={"user_id": self.USER_ID},
             transports=["polling", "websocket"],
             namespaces=[self.SIO_NAMESPACE],
         )
