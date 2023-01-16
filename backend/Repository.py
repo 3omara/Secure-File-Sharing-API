@@ -5,7 +5,7 @@ from models.User import User
 
 print(b"hello")
 INSERT_USER = (
-    "INSERT INTO users (user_id, user_name, public_key, sid) VALUES (%s, %s, %s, %s);"
+    "INSERT INTO users (user_name, password, public_key) VALUES (%s, %s, %s) RETURNING user_id;"
 )
 
 INSERT_FILE = (
@@ -20,12 +20,20 @@ UPDATE_USER_SID = (
     "UPDATE users SET sid = %s WHERE user_id = %s;"
 )
 
+UPDATE_USER_PUBLIC_KEY = (
+    "UPDATE users SET public_key = %s WHERE user_id = %s;"
+)
+
 UPDATE_REQUEST = (
     "UPDATE requests SET status = %s, enc_master_key = %s WHERE (file_id, sender_id) = (%s, %s);"
 )
 
 GET_USER_BY_ID = (
-    "SELECT user_id, user_name, public_key, sid FROM users WHERE user_id = %s;"
+    "SELECT * FROM users WHERE user_id = %s;"
+)
+
+GET_USER_BY_NAME = (
+    "SELECT * FROM users WHERE user_name = %s;"
 )
 
 GET_FILE_BY_ID = (
@@ -57,10 +65,12 @@ class Repository(metaclass=Singleton):
     def __init__(self, database: Database) -> None:
         self.database = Database()
 
-    def insert_user(self, user_id: int, user_name: str, public_key: bytes, sid: str):
+    def insert_user(self, user_name: str, password: str, public_key: bytes):
         c = self.database.connection.cursor()
-        c.execute(INSERT_USER, (user_id, user_name, public_key, sid))
+        c.execute(INSERT_USER, (user_name, password, public_key))
+        user_id = c.fetchone()
         self.database.connection.commit()
+        return user_id
 
     def insert_file(self, user_id: int, file_name: str, upload_time: str) -> int:
         c = self.database.connection.cursor()
@@ -77,6 +87,11 @@ class Repository(metaclass=Singleton):
     def update_user_sid(self, sid, user_id):
         c = self.database.connection.cursor()
         c.execute(UPDATE_USER_SID, (sid, user_id))
+        self.database.connection.commit()
+
+    def update_user_pkey(self, public_key, user_id):
+        c = self.database.connection.cursor()
+        c.execute(UPDATE_USER_SID, (public_key, user_id))
         self.database.connection.commit()
 
     def update_request(self, status, enc_master_key, file_id, sender_id):
@@ -96,7 +111,16 @@ class Repository(metaclass=Singleton):
         c.execute(GET_USER_BY_ID, (user_id,))
         res = c.fetchone()
         self.database.connection.commit()
-        return User(res[0], res[1], res[2], res[3])
+        return User(res[0], res[1], res[2], res[3], res[4])
+
+    def get_user_by_name(self, user_name) -> User:
+        c = self.database.connection.cursor()
+        c.execute(GET_USER_BY_NAME, (user_name,))
+        res = c.fetchone()
+        self.database.connection.commit()
+        if res != None:
+            return User(res[0], res[1], res[2], res[3], res[4])
+        return None
 
     def get_all_files(self):
         c = self.database.connection.cursor()

@@ -7,3 +7,5 @@ pycryptodome
 requests
 psycopg2-binary
 pyinstaller
+Flask-Login
+Flask-Bcrypt
