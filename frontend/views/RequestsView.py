@@ -8,7 +8,7 @@ from views.View import View
 
 class RequestsView(View):
     def setup_view(self):
-        self.user_id = 1
+        self.user_id = self.app.user.id
         # (file_id, sender_id) -> FileRequest
         self.__file_request_by_ids = {}
         columns = ('From', 'To', 'File')

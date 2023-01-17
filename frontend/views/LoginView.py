@@ -6,13 +6,19 @@ import requests
 
 from database.Database import Database
 from ciphers.RSACipher import RSACipher
+from models.User import User
 from views.View import View
 
 
 class LoginView(View):
 
     def setup_view(self):
+        self.width = 400
+        self.height = 240
         self.root = ThemedTk(theme="arc")
+        self.root.title("Vault")
+        self.root.geometry(f"{self.width}x{self.height}")
+        self.root.resizable(False, False)
 
         self.uname_var = tk.StringVar()
         self.pass_var = tk.StringVar()
@@ -48,23 +54,22 @@ class LoginView(View):
         name = self.uname_var.get()
         password = self.pass_var.get()
 
-        print("The name is : " + name)
-        print("The password is : " + password)
+        public_key = "None"
+        database = Database()
+        if (database.get_private_key(name) == None):
+            public_key, private_key = RSACipher().generate_keys()
+            database.insert_private_key(name, private_key)
 
+        data = {"user_name": name, "password": password,
+                "public_key": public_key}
         try:
-            public_key = "None"
-            database = Database()
-            if (database.get_private_key(name) == None):
-                public_key, private_key = RSACipher().generate_keys()
-                database.insert_private_key(name, private_key)
-
-            data = {"user_name": name, "password": password,
-                    "public_key": public_key}
             res = requests.post("http://127.0.0.1:5000/login", data=data)
-
+            self.app.user = User(
+                res.json()['id'],
+                self.uname_var.get(),
+                database.get_private_key(name)
+            )
             self.root.destroy()
-            print("USERID", res.json()['id'])
-            self.app.user_id = res.json()['id']
         except:
             self.uname_var.set("")
             self.pass_var.set("")

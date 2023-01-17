@@ -1,4 +1,5 @@
 import sqlite3
+from typing import Union
 from shared.Singleton import Singleton
 from models.FileReference import FileReference
 
@@ -14,8 +15,8 @@ class Database(metaclass=Singleton):
         self.connection.execute(
             f'''
             CREATE TABLE IF NOT EXISTS {MASTER_KEY_TABLE_NAME} (
-                id              INT PRIMARY KEY     AUTOINCREMENT,
-                file_id         INT                 NOT NULL,
+                file_id         INT                 PRIMARY KEY,
+                file_name       VARCHAR(255)        NOT NULL,
                 master_key      BLOB                NOT NULL
             );
             ''')
@@ -31,17 +32,17 @@ class Database(metaclass=Singleton):
     def close(self):
         self.connection.close()
 
-    def insert_master_key(self, file_id: int, master_key: bytes):
+    def insert_master_key(self, file_id: int, file_name: str, master_key: bytes):
         self.connection.execute(
             f'''
-            INSERT INTO {MASTER_KEY_TABLE_NAME} (file_id, master_key)
-            VALUES (?, ?);
+            INSERT INTO {MASTER_KEY_TABLE_NAME} (file_id, file_name, master_key)
+            VALUES (?, ?, ?);
             ''',
-            (file_id, master_key)
+            (file_id, file_name, master_key)
         )
         self.connection.commit()
 
-    def get_master_key(self, file_id: int) -> bytes or None:
+    def get_master_key(self, file_id: int) -> Union[bytes, None]:
         cursor = self.connection.execute(
             f'''
             SELECT master_key FROM {MASTER_KEY_TABLE_NAME}
@@ -52,7 +53,7 @@ class Database(metaclass=Singleton):
         row = cursor.fetchone()
         if row is None:
             return None
-        return row
+        return row[0]
 
     def get_private_key(self, user_name: str):
         cursor = self.connection.execute(
@@ -65,7 +66,7 @@ class Database(metaclass=Singleton):
         row = cursor.fetchone()
         if row is None:
             return None
-        return row
+        return row[0]
 
     def insert_private_key(self, user_name: str, private_key: bytes):
         self.connection.execute(

@@ -44,6 +44,7 @@ class FileReferencesRepository(Subject):
             self.file_references = [*self.__file_references,
                                     new_file_reference]
             self.local_db.insert_master_key(new_file_reference.id,
+                                            file.name,
                                             master_key,)
 
         self.client.emit("new_file_reference",

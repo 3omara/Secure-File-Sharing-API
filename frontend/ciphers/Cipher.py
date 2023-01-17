@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from Crypto.Util.Padding import pad, unpad
 
 
 class SymmetricCipher(ABC):
@@ -23,3 +24,14 @@ class SymmetricCipher(ABC):
     @abstractmethod
     def decrypt(self, ciphertext: str, key: bytes) -> str:
         pass
+
+    def pad(self, plaintext: bytes) -> bytes:
+        if len(plaintext) % self.BLOCK_SIZE != 0:
+            plaintext = pad(plaintext, self.BLOCK_SIZE)
+        return plaintext
+
+    def unpad(self, plaintext: bytes) -> bytes:
+        try:
+            return unpad(plaintext, self.BLOCK_SIZE)
+        except ValueError:
+            return plaintext

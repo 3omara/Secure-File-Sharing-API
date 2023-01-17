@@ -1,4 +1,5 @@
 from dataclasses import replace
+from models.User import User
 from models.FileReference import FileAccess, FileReference
 from models.FileRequest import FileRequestStatus
 from shared.ObserverPattern import Subject, Observer
@@ -7,12 +8,12 @@ from repositories.FileReferencesRepository import FileReferencesRepository
 
 
 class FileReferencesService(Subject, Observer):
-    USER_ID = 1
-
     def __init__(self,
                  file_references_repository: FileReferencesRepository,
-                 file_requests_repository: FileRequestsRepository,):
+                 file_requests_repository: FileRequestsRepository,
+                 user: User):
         super().__init__()
+        self.user = user
         self.__file_references = []
         self.__file_id_to_user_file_request = {}
         self.file_references_repository = file_references_repository
@@ -38,7 +39,7 @@ class FileReferencesService(Subject, Observer):
                     return replace(ref, access=FileAccess.PERMITTED)
                 elif req.status == FileRequestStatus.DECLINED:
                     return replace(ref, access=FileAccess.DENIED)
-            elif ref.owner_id == self.USER_ID:
+            elif ref.owner_id == self.user.id:
                 return replace(ref, access=FileAccess.PERMITTED)
             else:
                 return replace(ref, access=FileAccess.NOT_REQUESTED)
@@ -53,6 +54,6 @@ class FileReferencesService(Subject, Observer):
             self.__file_id_to_user_file_request = {
                 request.file_id: request
                 for request in subject.file_requests
-                if request.sender_id == self.USER_ID
+                if request.sender_id == self.user.id
             }
             self.file_references = self.file_references

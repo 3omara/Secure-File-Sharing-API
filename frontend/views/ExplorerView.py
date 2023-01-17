@@ -91,8 +91,9 @@ class ExplorerView(View, Observer):
             menu.tk_popup(event.x_root, event.y_root)
 
     def download(self, file_reference: FileReference):
-        print("download:: ", file_reference)
-        # todo
+        filename = askopenfilename()
+        if filename:
+            self.app.ftp_service.download(file_reference, filename)
 
     def request_access(self, file_reference: FileReference):
         self.app.file_requests_service.request(file_reference)

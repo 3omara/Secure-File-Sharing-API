@@ -22,4 +22,8 @@ def decrypted_filepath(filepath: str) -> str:
 
 
 def keys_filepath(filepath: str) -> str:
-    return f"{SECURE_FTP_CACHE}/" + get_name(filepath) + ".keys"
+    return f"{SECURE_FTP_CACHE}/" + keys_filename(filepath)
+
+
+def keys_filename(filepath: str) -> str:
+    return get_name(filepath) + ".keys"

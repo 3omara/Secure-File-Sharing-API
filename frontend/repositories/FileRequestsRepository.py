@@ -1,17 +1,16 @@
-import json
 import os
-from typing import List
+from typing import List, Union
 import socketio as sio
 from dataclasses import replace
 from shared.ObserverPattern import Subject
+from models.User import User
 from models.FileRequest import FileRequest, FileRequestStatus
 
 
 class FileRequestsRepository(Subject):
     SIO_NAMESPACE = "/file_requests"
-    USER_ID = 1
 
-    def __init__(self, client: sio.Client):
+    def __init__(self, client: sio.Client, user: User):
         super().__init__()
         self.client = client
         self.__file_requests = []
@@ -30,11 +29,11 @@ class FileRequestsRepository(Subject):
         self.client.on("decline_file_request",
                        self.__on_decline_file_request,
                        namespace=self.SIO_NAMESPACE)
-        print("init_requests")
         self.client.connect(
             os.getenv("SIO_HOST"),
             transports=["polling", "websocket"],
             namespaces=[self.SIO_NAMESPACE],
+            auth={"user_id": user.id}
         )
 
     @property
@@ -84,6 +83,10 @@ class FileRequestsRepository(Subject):
                          callback=on_declined,
                          namespace=self.SIO_NAMESPACE)
 
+    def get(self, file_id: int) -> Union[FileRequest, None]:
+        return next((request for request in self.__file_requests
+                     if request.file_id == file_id), None)
+
     def __on_init_file_requests(self, response):
         self.file_requests = [FileRequest.from_response(request)
                               for request in response["data"]]
@@ -98,7 +101,9 @@ class FileRequestsRepository(Subject):
 
     def __on_accept_file_request(self, response):
         self.file_requests = [request if request.file_id != response["data"]["file_id"]
-                              else replace(request, status=FileRequestStatus.ACCEPTED)
+                              else replace(request,
+                                           status=FileRequestStatus.ACCEPTED,
+                                           enc_master_key=response["data"]["enc_master_key"])
                               for request in self.__file_requests]
 
     def __on_decline_file_request(self, response):

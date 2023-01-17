@@ -11,13 +11,14 @@ class FileRequestStatus:
 
 @dataclass
 class FileRequest:
-    file_id: id
+    file_id: int
     file_name: str
-    sender_id: id
+    sender_id: int
     sender_name: str
-    receiver_id: id
+    receiver_id: int
     receiver_name: str
-    master_key: bytes
+    public_key: bytes
+    enc_master_key: bytes
     status: str
     sent_at: str
 
@@ -37,7 +38,8 @@ class FileRequest:
                 res.get("sender_name", None),
                 res.get("receiver_id", None),
                 res.get("receiver_name", None),
-                res.get("master_key", None),
+                res.get("public_key", None),
+                res.get("enc_master_key", None),
                 res.get("status", None),
                 res.get("sent_at", None),
             )

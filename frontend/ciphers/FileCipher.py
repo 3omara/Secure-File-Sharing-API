@@ -1,4 +1,4 @@
-from typing import Callable, Iterator, List
+from typing import Callable, List
 from itertools import cycle
 from ciphers.Cipher import SymmetricCipher
 

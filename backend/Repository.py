@@ -48,11 +48,20 @@ GET_ALL_FILES = (
 
 GET_USER_REQUESTS = (
     """ SELECT files.file_id, files.file_name, requests.sender_id, u1.user_name AS sender_name, files.user_id AS receiver_id, 
-                u2.user_name AS receiver_name, requests.status, requests.sent_at, requests.enc_master_key
+                u2.user_name AS receiver_name, requests.status, requests.sent_at, requests.enc_master_key, u1.public_key
         FROM files INNER JOIN requests ON files.file_id = requests.file_id
         INNER JOIN users u1 ON requests.sender_id = u1.user_id
         INNER JOIN users u2 ON files.user_id = u2.user_id 
         WHERE (requests.sender_id = %s OR files.user_id = %s) ; """
+)
+
+GET_REQUEST = (
+    """ SELECT files.file_id, files.file_name, requests.sender_id, u1.user_name AS sender_name, files.user_id AS receiver_id, 
+                u2.user_name AS receiver_name, requests.status, requests.sent_at, requests.enc_master_key, u1.public_key
+        FROM files INNER JOIN requests ON files.file_id = requests.file_id
+        INNER JOIN users u1 ON requests.sender_id = u1.user_id
+        INNER JOIN users u2 ON files.user_id = u2.user_id 
+        WHERE (files.file_id = %s AND requests.sender_id = %s) ; """
 )
 
 DELETE_REQUEST = (
@@ -70,7 +79,7 @@ class Repository(metaclass=Singleton):
         c.execute(INSERT_USER, (user_name, password, public_key))
         user_id = c.fetchone()
         self.database.connection.commit()
-        return user_id
+        return user_id[0]
 
     def insert_file(self, user_id: int, file_name: str, upload_time: str) -> int:
         c = self.database.connection.cursor()
@@ -83,6 +92,21 @@ class Repository(metaclass=Singleton):
         c = self.database.connection.cursor()
         c.execute(INSERT_REQUEST, (file_id, sender_id, status, sent_at))
         self.database.connection.commit()
+
+    def get_request(self, file_id: int, sender_id: int):
+        c = self.database.connection.cursor()
+        c.execute(GET_REQUEST, (file_id, sender_id))
+        res = c.fetchone()
+        self.database.connection.commit()
+        keys = ("file_id", "file_name", "sender_id", "sender_name", "receiver_id",
+                "receiver_name", "status", "sent_at", "enc_master_key", "public_key")
+        r = {keys[i]: v for i, v in enumerate(res)}
+        if r["enc_master_key"] is not None:
+            r["enc_master_key"] = r["enc_master_key"].tobytes()
+        if r["public_key"] is not None:
+            r["public_key"] = r["public_key"].tobytes()
+        r["status"] = Status(r["status"]).name
+        return r
 
     def update_user_sid(self, sid, user_id):
         c = self.database.connection.cursor()
@@ -140,12 +164,14 @@ class Repository(metaclass=Singleton):
         res = c.fetchall()
         self.database.connection.commit()
         keys = ("file_id", "file_name", "sender_id", "sender_name", "receiver_id",
-                "receiver_name", "status", "sent_at", "enc_master_key")
+                "receiver_name", "status", "sent_at", "enc_master_key", "public_key")
         allRequests = []
         for r in res:
             r = {keys[i]: v for i, v in enumerate(r)}
             if r["enc_master_key"] is not None:
                 r["enc_master_key"] = r["enc_master_key"].tobytes()
+            if r["public_key"] is not None:
+                r["public_key"] = r["public_key"].tobytes()
             r["status"] = Status(r["status"]).name
             allRequests.append(r)
         return allRequests
