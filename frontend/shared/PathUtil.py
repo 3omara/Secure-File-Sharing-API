@@ -1,5 +1,6 @@
 import os
 import pathlib
+import sys
 
 SECURE_FTP_CACHE = 'secure_ftp_cache'
 
@@ -31,3 +32,12 @@ def keys_filepath(filepath: str) -> str:
 
 def keys_filename(filepath: str) -> str:
     return get_name(filepath) + ".keys"
+
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)

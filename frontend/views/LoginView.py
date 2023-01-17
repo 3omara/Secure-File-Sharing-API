@@ -4,6 +4,7 @@ from tkinter import ttk
 from tkinter import *
 import requests
 
+from shared import PathUtil
 from database.Database import Database
 from ciphers.RSACipher import RSACipher
 from models.User import User
@@ -17,6 +18,7 @@ class LoginView(View):
         self.height = 240
         self.root = ThemedTk(theme="arc")
         self.root.title("Vault")
+        self.root.iconbitmap(PathUtil.resource_path("assets/app.ico"))
         self.root.geometry(f"{self.width}x{self.height}")
         self.root.resizable(False, False)
 

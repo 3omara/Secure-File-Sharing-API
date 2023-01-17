@@ -3,6 +3,7 @@ from tkinter import ttk
 from ttkthemes import ThemedTk
 from tkinter import messagebox
 
+from shared import PathUtil
 from views.View import View
 from views.RequestsView import RequestsView
 from views.ExplorerView import ExplorerView
@@ -14,6 +15,7 @@ class MainView(View):
         self.height = 600
         self.window = ThemedTk(theme="arc")
         self.window.title("Vault")
+        self.window.iconbitmap(PathUtil.resource_path("assets/app.ico"))
         self.window.geometry(f"{self.width}x{self.height}")
         self.window.resizable(False, False)
         self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
