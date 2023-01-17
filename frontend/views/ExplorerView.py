@@ -1,10 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from typing import List
-from models.FileReference import FileAccess, FileReference
 
+import shared.PathUtil as PathUtil
 from shared.ObserverPattern import Observer
+from models.FileReference import FileAccess, FileReference
 from views.View import View
 
 
@@ -19,7 +20,7 @@ class ExplorerView(View, Observer):
         for column in columns:
             self.tree.heading(column, text=column)
             self.tree.column(column, stretch=True, minwidth=0, width=100)
-        self.tree.column('Access', width=20)
+        self.tree.column('Access', width=20, anchor=tk.CENTER)
         self.tree.bind("<Button-3>", self.on_right_click)
 
     def register_observers(self):
@@ -91,7 +92,9 @@ class ExplorerView(View, Observer):
             menu.tk_popup(event.x_root, event.y_root)
 
     def download(self, file_reference: FileReference):
-        filename = askopenfilename()
+        filename = asksaveasfilename(
+            defaultextension=PathUtil.extension(file_reference.name),
+            initialfile=file_reference.name)
         if filename:
             self.app.ftp_service.download(file_reference, filename)
 

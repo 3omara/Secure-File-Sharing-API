@@ -1,5 +1,5 @@
 import os
-
+import pathlib
 
 SECURE_FTP_CACHE = 'secure_ftp_cache'
 
@@ -11,6 +11,10 @@ def setup_secure_ftp_cache():
 
 def get_name(filepath: str) -> str:
     return os.path.basename(filepath)
+
+
+def extension(filepath: str) -> str:
+    return pathlib.Path(filepath).suffix
 
 
 def encrypted_filepath(filepath: str) -> str:
