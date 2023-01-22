@@ -13,11 +13,12 @@ class MainView(View):
     def setup_view(self):
         self.width = 1000
         self.height = 600
+        self.min_width = 800
+        self.min_height = 480
         self.window = ThemedTk(theme="arc")
         self.window.title("Vault")
         self.window.iconbitmap(PathUtil.resource_path("assets/app.ico"))
         self.window.geometry(f"{self.width}x{self.height}")
-        self.window.resizable(False, False)
         self.window.protocol("WM_DELETE_WINDOW", self.on_closing)
         frame = ttk.Frame(self.window)
         frame.pack(fill=tk.BOTH, expand=True)
