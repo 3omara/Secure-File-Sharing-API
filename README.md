@@ -35,16 +35,19 @@ First, you need to install all the dependencies by running `pip install -r requi
 ### Running the Flask Server:
 
 1- Make sure you are in the backend directory by running `cd backend`.
+
 2- Run `flask run` to get the server running.
 
 ### Running the FTP Server:
 
 1- You need to install the python ftp server as follows: `python -m pip install python-ftp-server`.
+
 2- From the project directory, run the FTP server as follows: `python -m python_ftp_server -u "admin" -p "admin" --ip 0.0.0.0 --port 6060 -d "ftp_storage"`.
 
 ### Running the GUI:
 
 1- Make sure you are in the frontend directory by running `cd frontend`.
+
 2- Run `python main.py` and the desktop application should start running successfully.
 
 
