@@ -95,7 +95,7 @@ All incoming and outgoing requests can be seen on the left side of the screen. I
 
 ![image](https://user-images.githubusercontent.com/61950995/218224600-e5d8db20-775e-4468-a982-3af0d194d9f2.png)
 
-A user can cancel any pending outgoing requests they sent as follows:
+A user can cancel any pending outgoing requests they sent as follows. A bell icon beside a file indicates an access request is pending for that file:
 
 ![image](https://user-images.githubusercontent.com/61950995/218224688-2f5effd7-269a-4c05-8e4a-620aa8e9df36.png)
 
@@ -103,11 +103,11 @@ The owner of the requested files can accept or decline incoming requests to thos
 
 ![image](https://user-images.githubusercontent.com/61950995/218224740-e913da19-e1be-4179-be94-dded48756cee.png)
 
-Accepted requests are indicated with the green color:
+Accepted requests are indicated with the green color. A check mark beside a requested file indicates that this account can now access the file:
 
 ![image](https://user-images.githubusercontent.com/61950995/218224778-b280bb0e-cdab-44c2-946f-b42988a4b566.png)
 
-While declined requests are indicated with the red color:
+While declined requests are indicated with the red color. A cross mark beside a requested file indicates that this account has been denied access to that particular file:
 
 ![image](https://user-images.githubusercontent.com/61950995/218224823-75885be5-1e91-4059-bef5-6b17fe647599.png)
 
@@ -120,4 +120,3 @@ If you wish to download a file that you have access to, simply right click the f
 After downloading the fie we have been granted access to, we can see that it is no longer encrypted and that it has been decrypted successfully:
 
 ![image](https://user-images.githubusercontent.com/61950995/218225306-64e1f4ce-ba1b-4437-8403-aa1594ac5cef.png)
-
